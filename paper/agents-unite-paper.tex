@@ -1,0 +1,458 @@
+\documentclass[10pt,twocolumn]{article}
+
+\usepackage[margin=0.75in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds}
+\usepackage{enumitem}
+\usepackage{abstract}
+\usepackage{cite}
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+\setlength{\columnsep}{0.25in}
+\setlength{\parskip}{0.3em}
+\setlength{\parindent}{0pt}
+\setlist{nosep,leftmargin=*}
+
+\title{\textbf{Agents Unite: A Git-Native Proof-of-Trust Ledger\\for Distributed Financial Intelligence}}
+\author{
+  \textit{Open Financial Memory Initiative}\\
+  \small github.com/rahiakil/agents-unite
+}
+\date{July 2026}
+
+\begin{document}
+
+\twocolumn[
+\begin{@twocolumnfalse}
+\maketitle
+\begin{abstract}
+\noindent
+Autonomous large language model (LLM) agents can synthesize market sentiment, news flow, and technical context at scale---yet solo deployments face a dual constraint: \emph{token economics} that scale linearly with universe coverage, and \emph{temporal blind spots} that no single timezone can close. We present \textbf{Agents Unite}, an open-source architecture that treats a single GitHub repository as a distributed financial memory layer. Thousands of contributors each spend approximately \$0.25 of inference per day on one deterministically assigned ticker, submit structured reports via pull requests, and rely on verifier and consensus agents---coordinated by Raft-style leader election and proof-of-stake-inspired reputation weighting---to merge independent analyses into a canonical ledger. Unlike on-chain knowledge graphs, Agents Unite leverages existing Git workflows (CI validation, CODEOWNERS, immutable prompt hashes) as a lightweight consensus substrate. The resulting archive supports backtesting, retrieval-augmented generation (RAG), and longitudinal evaluation across equities, crypto, ETFs, and bonds. We argue this model reduces aggregate token spend by orders of magnitude, compounds history as the primary moat, and warrants a new class of open foundation---the \emph{Open Financial Memory Foundation}---analogous to the Apache Software Foundation but scoped to verifiable market intelligence.
+\end{abstract}
+\vspace{0.5em}
+\end{@twocolumnfalse}
+]
+
+%=============================================================================
+\section{Introduction}
+%=============================================================================
+
+Financial markets generate narrative, sentiment, and price information faster than any individual---human or agent---can absorb. Retail and institutional participants increasingly delegate synthesis to LLM agents, yet three structural failures persist:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Ephemeral memory.} Agent sessions discard work at termination; yesterday's NVDA analysis must be regenerated at full cost.
+  \item \textbf{Budget exhaustion.} Covering $\sim$4{,}000 U.S.\ tickers daily with agentic research consumes hundreds of dollars in tokens per run~\cite{agentsunite}.
+  \item \textbf{Timezone asymmetry.} A cron job in Austin misses Tokyo open chatter, overnight Reddit spikes, and post-close filings.
+\end{enumerate}
+
+\textbf{Agents Unite}~\cite{agentsunite} reframes the problem: instead of one operator researching the entire market, \emph{the crowd researches one ticker each}. Assignment is deterministic---contributors cannot cherry-pick symbols---and outputs land in a versioned path \texttt{data/YYYY-MM-DD/TICKER/}. Git history becomes the asset: every belief is a commit, every merge is consensus, every fork is a derivative index.
+
+This paper formalizes the architecture, draws precise analogies to distributed consensus and proof-of-stake systems, and outlines governance via an Apache-style foundation. Our thesis: \emph{the biggest moat is not the code; it is history.}
+
+%=============================================================================
+\section{Problem Formulation}
+%=============================================================================
+
+Let $T$ denote the ticker universe ($|T| \approx 4{,}000$), $C$ the daily active contributors, and $c$ the per-report token cost ($c \approx \$0.25$). Solo coverage cost is $O(|T| \cdot c)$; crowd coverage is $O(C \cdot c)$ with $C$ contributors each assigned one ticker. When $C \approx |T|$, full daily coverage costs $\sim\!\$1{,}000$ aggregate versus $\sim\!\$1{,}000+$ for a \emph{single} operator attempting the same---but the crowd additionally provides:
+
+\begin{itemize}
+  \item \textbf{Temporal diversity}---agents in London, Tokyo, and Austin capture disjoint information windows;
+  \item \textbf{Model diversity}---Claude, GPT, Gemini, DeepSeek, and local Ollama instances decorrelate hallucination errors~\cite{methods};
+  \item \textbf{Focus diversity}---randomized slices (sentiment, news, social, trading) turn assignment collisions into complementary reports.
+\end{itemize}
+
+Table~\ref{tab:economics} summarizes the economic inversion.
+
+\begin{table}[h]
+\centering
+\caption{Token economics: solo vs.\ crowd model.}
+\label{tab:economics}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Model} & \textbf{Cost} & \textbf{Coverage} \\
+\midrule
+Solo agent & \$500--2000+/day & Partial \\
+Crowd model & \$0.25$\times C$/day & $C$ tickers \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%=============================================================================
+\section{System Architecture}
+%=============================================================================
+
+Figure~\ref{fig:arch} depicts the end-to-end pipeline. There is no central application server; \textbf{GitHub is the database}.
+
+\begin{figure}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=0.35cm and 0.5cm,
+  box/.style={draw, rounded corners=2pt, minimum height=0.55cm, minimum width=1.6cm, align=center, font=\scriptsize, fill=blue!5},
+  ghbox/.style={box, fill=green!8},
+  agent/.style={box, fill=orange!10},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+  \node[agent] (assign) {Assign\\Ticker};
+  \node[agent, right=of assign] (research) {Research\\Agent};
+  \node[agent, right=of research] (validate) {Local\\Validate};
+  \node[ghbox, below=0.6cm of validate] (pr) {Pull\\Request};
+  \node[ghbox, left=of pr] (ci) {CI\\Guard};
+  \node[agent, left=of ci] (verify) {Verifier\\Agent};
+  \node[agent, below=0.6cm of ci] (consensus) {Consensus\\Agent};
+  \node[ghbox, below=0.6cm of consensus] (data) {data/DATE/\\TICKER/};
+
+  \draw[arr] (assign) -- (research);
+  \draw[arr] (research) -- (validate);
+  \draw[arr] (validate) -- (pr);
+  \draw[arr] (pr) -- (ci);
+  \draw[arr] (ci) -- (verify);
+  \draw[arr] (verify) -- (consensus);
+  \draw[arr] (consensus) -- (data);
+\end{tikzpicture}%
+}
+\caption{Distributed ingestion pipeline. Each contributor machine runs assignment, research, and validation locally; GitHub CI and peer agents provide trust anchors.}
+\label{fig:arch}
+\end{figure}
+
+\subsection{Deterministic Assignment}
+
+Ticker selection prevents manipulation:
+\begin{equation}
+  k = \text{SHA256}(\text{date} : \text{contributor\_hash}) \bmod |T|
+\end{equation}
+The assigned ticker is $T_k$ from a sorted, community-maintained universe file. Role selection uses a parallel hash lottery: $\sim$65\% research, $\sim$20\% verify, $\sim$15\% consensus~\cite{roles}.
+
+\subsection{Report Schema}
+
+Each artifact pair \texttt{report.*.md} + \texttt{sources.*.json} includes YAML frontmatter with \texttt{sentiment\_score} $\in [-1,1]$, \texttt{prompt\_hash}, and \texttt{github\_username}. Separating URLs into JSON keeps diffs readable and enables programmatic deduplication~\cite{architecture}.
+
+%=============================================================================
+\section{Consensus and Distributed Coordination}
+%=============================================================================
+
+A single agent report is noisy. Agents Unite implements a \textbf{three-stage consensus pipeline} inspired by Raft~\cite{raft} and proof-of-stake validator networks~\cite{ethereum-pos}.
+
+\begin{figure}[h]
+\centering
+\resizebox{0.95\columnwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=0.4cm,
+  stage/.style={draw, ellipse, minimum width=1.4cm, minimum height=0.6cm, font=\scriptsize, fill=yellow!10},
+  arr/.style={-{Stealth[length=2mm]}}
+]
+  \node[stage] (r) {Research};
+  \node[stage, right=0.8cm of r] (v) {Verify};
+  \node[stage, right=0.8cm of v] (c) {Consensus};
+  \node[below=0.3cm of c, font=\scriptsize] (out) {consensus.md};
+
+  \draw[arr] (r) -- node[above,font=\tiny]{PR} (v);
+  \draw[arr] (v) -- node[above,font=\tiny]{approved} (c);
+  \draw[arr] (c) -- (out);
+\end{tikzpicture}%
+}
+\caption{Role pipeline: research $\rightarrow$ verify $\rightarrow$ consensus.}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{Weighted Median Aggregation}
+
+Given $n$ validated scores $\{x_i\}$:
+\begin{enumerate}[label=(\roman*)]
+  \item Compute median $m$ and MAD; reject outliers where $|x_i - m| > 2 \cdot \text{MAD}$.
+  \item Compute weighted median with weights $w_i = \text{stake}_i \times \text{reputation}_i \times \text{recency}_i$.
+  \item Assign confidence: \emph{high} if $n \geq 3$ and spread $\leq 0.4$; \emph{low} if $n = 1$~\cite{consensus}.
+\end{enumerate}
+
+Themes are \emph{not} forced into agreement; divergence is preserved in \texttt{consensus.md}.
+
+\subsection{Raft Leader Election for Hourly Shards}
+
+Phase~3 introduces hourly updates. Multiple writers to the same \texttt{(date, ticker, hour)} shard would cause Git conflicts. Agents Unite adopts \textbf{deterministic Raft-style leader election} without a blockchain:
+
+\begin{equation}
+  \text{leader} = \arg\min_{i} \text{SHA256}(\text{date} : \text{hour} : \text{ticker} : \text{hash}_i)
+\end{equation}
+
+Among contributors who submitted valid hourly reports, the minimum hash wins write authority for the consensus merge---analogous to Raft's single-leader principle~\cite{raft} but requiring no network partition protocol because GitHub serializes merges.
+
+\begin{figure}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=0.5cm,
+  agent/.style={draw, circle, minimum size=0.7cm, font=\tiny},
+  leader/.style={agent, fill=red!15, line width=1pt},
+  arr/.style={-{Stealth[length=1.5mm]}, dashed}
+]
+  \node[agent] (a1) {A};
+  \node[agent, right=of a1] (a2) {B};
+  \node[leader, right=of a2] (a3) {C*};
+  \node[agent, right=of a3] (a4) {D};
+  \node[below=0.8cm of a2, font=\scriptsize] (gh) {GitHub merge};
+  \draw[arr] (a1) -- (gh);
+  \draw[arr] (a2) -- (gh);
+  \draw[arr] (a3) -- (gh);
+  \draw[arr] (a4) -- (gh);
+  \node[above=0.1cm of a3, font=\tiny] {Leader};
+\end{tikzpicture}%
+}
+\caption{Hourly shard: contributor C wins deterministic leader election and merges \texttt{consensus.md}.}
+\label{fig:raft}
+\end{figure}
+
+\subsection{Proof-of-Stake Analogy}
+
+Ethereum's proof-of-stake selects validators proportional to staked ETH~\cite{ethereum-pos}. Agents Unite's Phase~4 maps this to \textbf{reputation staking}:
+
+\begin{itemize}
+  \item \textbf{Stake} = accumulated accuracy vs.\ ex-post consensus and price outcomes;
+  \item \textbf{Validators} = verifier agents with high merge approval rates;
+  \item \textbf{Slashing} = reputation decay for rejected reports, fabricated URLs, or MAD outliers;
+  \item \textbf{Rewards} = leaderboard visibility, weighted influence, eligibility for signal consumption.
+\end{itemize}
+
+No native token is required in Phase~1; reputation lives in \texttt{contributors/reputation.json}. Optional on-chain attestation layers (e.g., MINT Protocol~\cite{mint}) can anchor Merkle roots of daily snapshots without storing private data on-chain.
+
+%=============================================================================
+\section{Git as Consensus Substrate}
+%=============================================================================
+
+Table~\ref{tab:git-blockchain} compares blockchain primitives to Git-native equivalents. Agents Unite occupies a middle ground: \emph{permissioned trust} via GitHub identity and CI, with \emph{permissionless read} via MIT license and fork.
+
+\begin{table}[h]
+\centering
+\caption{Blockchain $\leftrightarrow$ Git mapping in Agents Unite.}
+\label{tab:git-blockchain}
+\scriptsize
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Blockchain} & \textbf{Agents Unite} \\
+\midrule
+Block & Commit \\
+Validator set & Verifiers + CI \\
+Consensus & Weighted median + merge \\
+State trie & \texttt{data/DATE/TICKER/} \\
+Smart contract & GitHub Actions workflows \\
+Finality & Merged to \texttt{main} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Related decentralized memory systems---OriginTrail DKG~\cite{origintrail}, Akashik~\cite{akashik}, HadAgent~\cite{hadagent}---anchor knowledge on-chain or in P2P graphs. Agents Unite deliberately chooses \textbf{lower friction}: any developer with Git and an API key can contribute today, without running a node or purchasing tokens.
+
+%=============================================================================
+\section{Longitudinal Memory and Downstream Use}
+%=============================================================================
+
+The repository layout \texttt{data/YYYY-MM-DD/TICKER/} creates a \textbf{census of market belief} over time---what we term the \emph{Raft census}: periodic independent observations aggregated into consensus snapshots.
+
+\subsection{Backtesting and RAG}
+
+Downstream consumers load structured time series:
+{\small\ttfamily python3 examples/load\_reports.py --ticker NVDA --last 30\par}
+Researchers can correlate \texttt{sentiment\_score} with forward returns, train custom models on labeled sentiment, or embed reports for LLM terminals. The Hugging Face \texttt{DLT-Sentiment-News} dataset~\cite{dlt-sentiment} demonstrates demand for crowdsourced financial sentiment; Agents Unite provides a \emph{live, versioned} alternative.
+
+\subsection{Asset-Class Expansion}
+
+Phase~1 seeds 291 U.S.\ equities; community PRs expand toward 4{,}000+. Planned working groups cover crypto, ETFs, bonds, and international exchanges---each incubated under foundation governance (Section~\ref{sec:foundation}).
+
+%=============================================================================
+\section{Foundation Governance}
+\label{sec:foundation}
+%=============================================================================
+
+Sustainable open data requires neutral stewardship. We propose the \textbf{Open Financial Memory Foundation (OFMF)}, modeled on the Apache Software Foundation~\cite{apache}:
+
+\begin{figure}[h]
+\centering
+\resizebox{0.9\columnwidth}{!}{%
+\begin{tikzpicture}[
+  level/.style={draw, rounded corners, minimum width=2.8cm, minimum height=0.5cm, font=\scriptsize, align=center},
+  arr/.style={-{Stealth[length=2mm]}}
+]
+  \node[level, fill=blue!10] (board) {Board of Directors};
+  \node[level, fill=green!10, below=0.5cm of board] (pmc) {PMC (Core Maintainers)};
+  \node[level, fill=yellow!10, below left=0.5cm and 0.3cm of pmc] (eq) {Equities WG};
+  \node[level, fill=yellow!10, below=0.5cm of pmc] (crypto) {Crypto WG};
+  \node[level, fill=yellow!10, below right=0.5cm and 0.3cm of pmc] (intl) {Intl.\ WG};
+  \draw[arr] (board) -- (pmc);
+  \draw[arr] (pmc) -- (eq);
+  \draw[arr] (pmc) -- (crypto);
+  \draw[arr] (pmc) -- (intl);
+\end{tikzpicture}%
+}
+\caption{OFMF governance: Apache-style meritocracy with asset-class working groups.}
+\label{fig:foundation}
+\end{figure}
+
+Key principles: (i)~individual merit over corporate affiliation; (ii)~immutable core (\texttt{scripts/}, \texttt{agents/}) protected by CODEOWNERS; (iii)~tagged dataset releases for reproducible backtests; (iv)~501(c)(3) structure to resist vendor capture.
+
+%=============================================================================
+\section{Future Implications}
+%=============================================================================
+
+\textbf{For traders.} A single forkable repository replaces repeated full-market agent runs. Consensus-gated signals reduce false positives from any one model.
+
+\textbf{For agent builders.} Canonical prompts, harness adapters, and a reputation economy create portable credentials---``Stack Overflow for market calls.''
+
+\textbf{For society.} Open financial memory democratizes alt-data currently locked in terminal subscriptions. Global timezone coverage turns contributor geography into infrastructure.
+
+\textbf{Risks.} Sybil attacks, coordinated manipulation, and hallucinated sources require escalating mitigations (proof-of-human, URL HEAD checks, on-chain attestation). The system explicitly disclaims investment advice; it produces \emph{structured observations}, not trade recommendations.
+
+At scale ($20{,}000$ installs $\times$ 15\% daily active $\approx$ 3{,}000 reports/day), Agents Unite approaches 75\% daily universe coverage---a density no solo agent achieves at any price.
+
+%=============================================================================
+\section{Agent Specialization and Analysis Modalities}
+%=============================================================================
+
+Contributors do not produce identical memos. Role randomization splits each day's work into \textbf{complementary analytical modalities}, turning assignment collisions into ensemble coverage rather than redundant spend.
+
+\subsection{Sentiment and Emotional Analysis}
+
+Research agents with \texttt{sentiment} or \texttt{social} focus synthesize narrative mood from Reddit threads, StockTwits, and forum discourse. Outputs include a bounded \texttt{sentiment\_score} $\in [-1,1]$, key theme bullets, and source-attributed snippets. This layer captures \emph{what the crowd feels}---often leading price by hours or days during earnings seasons and meme-stock episodes.
+
+\subsection{Technical and Trading Analysis}
+
+Agents assigned \texttt{trading} or \texttt{full} focus produce structured price snapshots: daily change, volume, 52-week range position, and catalyst tables. These reports ground sentiment in \emph{observable market state}, enabling cross-validation when emotional narratives diverge from price action.
+
+\subsection{News and Macro Flow}
+
+The \texttt{news} slice aggregates filings, press releases, analyst notes, and macro headlines. Verifiers cross-check cited numbers against source URLs---a lightweight analog to oracle validation in DeFi systems, performed by peer agents rather than on-chain feeds.
+
+Figure~\ref{fig:modalities} summarizes how randomized focus maps to complementary coverage when multiple agents collide on the same ticker-day shard.
+
+\begin{figure}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  mod/.style={draw, rounded corners=3pt, minimum width=1.5cm, minimum height=0.55cm, font=\scriptsize, align=center},
+  arr/.style={-{Stealth[length=2mm]}}
+]
+  \node[mod, fill=red!10] (s) {Sentiment};
+  \node[mod, fill=blue!10, right=0.3cm of s] (n) {News};
+  \node[mod, fill=green!10, right=0.3cm of n] (so) {Social};
+  \node[mod, fill=orange!10, right=0.3cm of so] (t) {Trading};
+  \node[mod, fill=purple!10, below=0.6cm of n] (c) {Consensus};
+  \draw[arr] (s) -- (c);
+  \draw[arr] (n) -- (c);
+  \draw[arr] (so) -- (c);
+  \draw[arr] (t) -- (c);
+\end{tikzpicture}%
+}
+\caption{Complementary analysis modalities merge into daily \texttt{consensus.md}.}
+\label{fig:modalities}
+\end{figure}
+
+%=============================================================================
+\section{Asset Classes and Global Expansion}
+%=============================================================================
+
+Phase~1 seeds a U.S.\ equity universe of 291 tickers, expanding via community pull requests toward 4{,}000+. The architecture generalizes without schema changes:
+
+\begin{itemize}
+  \item \textbf{Crypto} --- BTC, ETH, and altcoin pairs under \texttt{tickers/crypto.json}; 24/7 markets benefit most from hourly shards and global cron coverage.
+  \item \textbf{ETFs} --- Sector and thematic funds (XLK, ARKK, SPY) enable macro sentiment layers above single-name equity.
+  \item \textbf{Bonds} --- Treasury and corporate credit tickers; yield-curve narratives require \texttt{news} and \texttt{trading} focus dominance.
+  \item \textbf{International} --- LSE, TSE, HKEX symbols via regional working groups under OFMF incubation.
+\end{itemize}
+
+Each asset class follows the Apache \emph{incubator} pattern: a podling working group proves schema fit, verifier coverage, and contributor density before graduation to top-level \texttt{tickers/} inclusion. This prevents premature universe bloat while preserving a \textbf{single canonical repository}---one Git history spanning all asset classes.
+
+%=============================================================================
+\section{The Raft Census: Longitudinal Aggregation}
+%=============================================================================
+
+We introduce the term \textbf{Raft census} to describe the periodic aggregation of independent agent observations into consensus snapshots over calendar time. Unlike a one-shot sentiment poll, the census is:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Repeated} --- daily (Phase~1), hourly (Phase~2+) observations per ticker;
+  \item \textbf{Independent} --- contributors cannot see others' drafts before submission;
+  \item \textbf{Reconciled} --- verifiers and consensus agents produce \texttt{consensus.md};
+  \item \textbf{Immutable} --- raw reports persist alongside canonical merges in Git history.
+\end{enumerate}
+
+This structure mirrors census-based statistical sampling: each agent is a enumerator; verifiers are auditors; consensus is official tabulation. The resulting time series supports rigorous downstream analysis.
+
+\subsection{Backtesting Methodology}
+
+Quant researchers can construct sentiment factors from \texttt{consensus\_score} or raw \texttt{sentiment\_score} distributions:
+
+\begin{enumerate}[label=(\alph*)]
+  \item Load reports via \texttt{examples/load\_reports.py} for ticker $t$ and window $[t_0, t_1]$;
+  \item Align scores to market close timestamps (configurable: UTC midnight or US close);
+  \item Compute forward returns $r_{t+h}$ for horizons $h \in \{1, 5, 20\}$ days;
+  \item Test monotonicity: do high-sentiment quintiles outperform low-sentiment quintiles?
+  \item Attribute alpha to contributor subsets via \texttt{github\_username} for reputation calibration.
+\end{enumerate}
+
+Because every report includes \texttt{prompt\_hash} and source URLs, backtests are \textbf{reproducible}---a requirement absent from proprietary terminal feeds.
+
+\subsection{RAG and LLM Downstream Queries}
+
+The Phase~2 pipeline embeds reports into a searchable index and knowledge graph (\texttt{wiki/}). Example queries enabled by longitudinal memory:
+
+\begin{itemize}
+  \item ``Which bearish Reddit themes preceded NVDA's last twenty earnings misses?''
+  \item ``How did consensus sentiment on regional banks evolve during March 2023?''
+  \item ``Which contributors consistently led consensus by $\geq 3$ days?''
+\end{itemize}
+
+These queries run against \emph{crowd-collected history} at marginal cost---avoiding full-market agent regeneration.
+
+%=============================================================================
+\section{Comparison with Related Architectures}
+%=============================================================================
+
+Table~\ref{tab:related} positions Agents Unite against contemporary decentralized AI memory and inference systems.
+
+\begin{table}[h]
+\centering
+\caption{Agents Unite vs.\ related systems.}
+\label{tab:related}
+\scriptsize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{System} & \textbf{Git-native} & \textbf{Financial} & \textbf{Live} \\
+\midrule
+OriginTrail DKG & \xmark & \xmark & \cmark \\
+Akashik & \xmark & \xmark & \cmark \\
+HadAgent & \xmark & \xmark & \cmark \\
+DLT-Sentiment & \xmark & \cmark & \xmark \\
+\textbf{Agents Unite} & \cmark & \cmark & \cmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Agents Unite's deliberate trade-off is \textbf{lower cryptographic overhead} in exchange for \textbf{immediate deployability}. Any developer with Git, Python 3.10+, and an LLM API key can contribute today. Optional Phase~4 on-chain attestation (MINT-style hash anchoring) adds tamper evidence without mandating token economics.
+
+%=============================================================================
+\section{Conclusion}
+%=============================================================================
+
+Agents Unite demonstrates that \textbf{blockchain \emph{ideas}---consensus, stake-weighted trust, immutable history---need not require blockchain \emph{infrastructure}} when Git, CI, and open governance suffice. By decomposing market research into pawn-sized daily assignments, verifier-audited merges, and Raft-coordinated consensus writes, the project converts fragmented agent labor into a compounding public good. The moat is history; the mechanism is the crowd; the invitation is open.
+
+%=============================================================================
+\section*{Acknowledgments}
+%=============================================================================
+The Agents Unite open-source community and the maintainers of \url{github.com/rahiakil/agents-unite}.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
