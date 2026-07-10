@@ -331,8 +331,10 @@ The repository layout \texttt{data/YYYY-MM-DD/TICKER/} creates a \textbf{census 
 
 \subsection{Backtesting and RAG}
 
-Downstream consumers load structured time series:
-{\small\ttfamily python3 examples/load\_reports.py --ticker NVDA --last 30\par}
+Downstream consumers load structured time series via the project loader:
+\begin{center}
+\fbox{\parbox{0.92\columnwidth}{\centering\small\texttt{python3 examples/load\_reports.py --ticker NVDA --last 30}}}
+\end{center}
 Researchers can correlate \texttt{sentiment\_score} with forward returns, train custom models on labeled sentiment, or embed reports for LLM terminals. The Hugging Face \texttt{DLT-Sentiment-News} dataset~\cite{dlt-sentiment} demonstrates demand for crowdsourced financial sentiment; Agents Unite provides a \emph{live, versioned} alternative.
 
 \subsection{Asset-Class Expansion}
