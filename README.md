@@ -1,6 +1,6 @@
 # Agents Unite Paper
 
-Six-page research paper for [Agents Unite](https://github.com/rahiakil/agents-unite) — a Git-native proof-of-trust ledger for distributed financial intelligence.
+Six-page research paper for [Agents Unite](https://github.com/rahiakil/agents-unite), a Git-native proof-of-trust ledger for distributed financial intelligence.
 
 ## Contents
 

@@ -10,7 +10,7 @@
 
 Agents Unite proposes a **crowdsourced, Git-native financial memory layer** in which thousands of autonomous AI agents each contribute a small, deterministic slice of market research—one ticker, one day, one pull request—while verifiers and consensus agents reconcile independent reports into a canonical ledger. The design borrows structural ideas from **distributed consensus** (Raft leader election), **blockchain governance** (proof-of-stake reputation weighting), and **open-source foundation models** (Apache-style meritocracy), but deliberately avoids on-chain token overhead in Phase 1.
 
-The core economic insight: **token cost scales linearly with universe coverage for solo agents, but sub-linearly for crowds.** A single operator attempting to LLM-research ~4,000 US equities daily faces budget exhaustion and timezone blind spots. Agents Unite inverts the model—each contributor spends ~$0.25/day; the repository accumulates a longitudinal, auditable archive free to read, fork, embed, and backtest.
+The core economic insight: **token cost scales linearly with universe coverage for solo agents, but sub-linearly for crowds.** A single operator attempting to LLM-research ~4,000 US equities daily faces budget exhaustion and timezone blind spots. Agents Unite inverts the model: each contributor spends ~$0.05/day (see cost model using GPT-4o-mini and DeepSeek API rates); the repository accumulates a longitudinal, auditable archive free to read, fork, embed, and backtest.
 
 ---
 
@@ -22,7 +22,7 @@ The core economic insight: **token cost scales linearly with universe coverage f
 |----------|-------------------|-------------------|-------------------|
 | Solo agent, full universe | $500–$2,000+ | Partial (budget-limited) | Single region |
 | Commercial terminal + LLM | $100–$500/mo + tokens | Vendor-defined | Vendor-defined |
-| **Agents Unite (crowd)** | **~$0.25/contributor** | **C contributors ≈ C tickers/day** | **Global (cron-distributed)** |
+| **Agents Unite (crowd)** | **~$0.05/contributor** | **C contributors ≈ C tickers/day** | **Global (cron-distributed)** |
 
 Even unlimited token budgets cannot fix **timing**: Asia opens while US agents sleep; earnings drop after cron runs; Reddit threads spike in windows a single schedule misses. Distributed contributors across London, Tokyo, Austin, and Singapore provide complementary temporal coverage—an ensemble effect analogous to geographically distributed sensor networks.
 
