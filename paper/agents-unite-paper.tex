@@ -3,12 +3,12 @@
 \usepackage[margin=0.75in]{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{tikz}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds}
 \usepackage{enumitem}
 \usepackage{abstract}
@@ -103,38 +103,25 @@ Harness overhead ($\sim$5$\times$) & \multicolumn{2}{c}{tool calls, browsing} & 
 
 \begin{figure}[h]
 \centering
-\begin{tikzpicture}
-\begin{axis}[
-  ybar,
-  bar width=14pt,
-  ymin=0,
-  ymax=2200,
-  ytick={0,200,600,1200,2000},
-  yticklabels={\$0,\$200,\$600,\$1.2K,\$2K},
-  symbolic x coords={%
-    {AU contrib},{AU read},{Solo budget},{Solo mid},{Solo prem}},
-  xtick=data,
-  x tick label style={font=\scriptsize, align=center},
-  ylabel={\scriptsize Avg.\ daily inference cost},
-  ylabel style={font=\scriptsize},
-  width=\columnwidth,
-  height=5.2cm,
-  enlarge x limits=0.12,
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  x=0.0026cm,
+  bar/.style={fill=blue!35, draw=blue!60, line width=0.4pt},
+  lbl/.style={font=\scriptsize, anchor=west}
 ]
-\addplot[fill=blue!35, draw=blue!60] coordinates {
-  ({AU contrib}, 0.05)
-  ({AU read}, 0)
-  ({Solo budget}, 200)
-  ({Solo mid}, 600)
-  ({Solo prem}, 2000)
-};
-\node[font=\tiny, anchor=south] at (axis cs:{AU contrib},15) {\$0.05};
-\node[font=\tiny, anchor=south] at (axis cs:{AU read},15) {\$0};
-\node[font=\tiny, rotate=90, anchor=west] at (axis cs:{Solo budget},200) {\$200};
-\node[font=\tiny, rotate=90, anchor=west] at (axis cs:{Solo mid},600) {\$600};
-\node[font=\tiny, rotate=90, anchor=west] at (axis cs:{Solo prem},2000) {\$2K};
-\end{axis}
-\end{tikzpicture}
+  \draw[->] (0,0) -- (2150,0) node[right, font=\tiny] {USD/day};
+  \foreach \y/\val/\name/\tag in {
+    0/2000/Solo prem/\$2K,
+    1/600/Solo mid/\$600,
+    2/200/Solo budget/\$200,
+    3/0.05/AU contrib/\$0.05,
+    4/0/AU read/\$0} {
+    \pgfmathsetmacro{\draww}{max(\val, 12)}
+    \draw[bar] (0,\y) rectangle (\draww,\y+0.65);
+    \node[lbl] at (\draww+8,\y+0.32) {\name\ (\tag)};
+  }
+\end{tikzpicture}%
+}
 \caption{Average daily inference cost by coverage model for a $\sim$4{,}000-ticker universe. \emph{AU contrib}: one Agents Unite contributor (\$0.05/day). \emph{AU read}: fork and consume existing reports (\$0). \emph{Solo budget/mid/prem}: single operator at \$0.05, \$0.15, and \$0.50 per ticker. Rates from~\cite{openai-pricing,deepseek-pricing,agentsunite}.}
 \label{fig:costs}
 \end{figure}
@@ -331,10 +318,7 @@ The repository layout \texttt{data/YYYY-MM-DD/TICKER/} creates a \textbf{census 
 
 \subsection{Backtesting and RAG}
 
-Downstream consumers load structured time series via the project loader:
-\begin{center}
-\fbox{\parbox{0.92\columnwidth}{\centering\small\texttt{python3 examples/load\_reports.py --ticker NVDA --last 30}}}
-\end{center}
+Downstream consumers load structured time series with the project loader script (\texttt{examples/load\_reports.py}), e.g.\ \texttt{--ticker NVDA --last 30}.
 Researchers can correlate \texttt{sentiment\_score} with forward returns, train custom models on labeled sentiment, or embed reports for LLM terminals. The Hugging Face \texttt{DLT-Sentiment-News} dataset~\cite{dlt-sentiment} demonstrates demand for crowdsourced financial sentiment; Agents Unite provides a \emph{live, versioned} alternative.
 
 \subsection{Asset-Class Expansion}

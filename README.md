@@ -41,7 +41,13 @@ make verify
 
 This rebuilds the PDF and checks for LaTeX errors, page count, and file size.
 
-**Important:** Open `paper/agents-unite-paper.pdf` in a desktop PDF viewer (Preview, Evince, Adobe Reader) before you push. Cursor's built-in PDF preview sometimes shows *"unable to render code block"* for TikZ/pgfplots figures even when the PDF is valid. If the chart and tables look correct externally, the PDF is fine to publish.
+**Important:** Cursor's built-in PDF tab often shows *"Unable to render code block"* because it tries to text-parse binary PDFs. Use one of these instead:
+
+1. **Right-click** `paper/agents-unite-paper.pdf` → **Reveal in File Explorer** → open with Preview/Adobe/Evince
+2. **Terminal:** `xdg-open paper/agents-unite-paper.pdf` (Linux) or `open paper/agents-unite-paper.pdf` (macOS)
+3. This repo sets `.vscode/settings.json` to prefer the system PDF handler over Cursor's inline viewer
+
+The PDF itself is valid if `make verify` passes and an external viewer shows 6 pages with Figure 1 (cost chart) and all tables.
 
 Manual checklist:
 

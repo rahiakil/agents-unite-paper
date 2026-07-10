@@ -15,4 +15,4 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   texlive-bibtex-extra \
   make
 
-echo "Done. Run: make paper"
+echo "Done. Run: make verify"
