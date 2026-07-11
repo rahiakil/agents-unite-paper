@@ -11,6 +11,8 @@ Six-page research paper for [Agents Unite](https://github.com/rahiakil/agents-un
 | `paper/references.bib` | Bibliography |
 | `poster/agents-unite-poster.tex` | Conference poster source |
 | `poster/agents-unite-poster.pdf` | Compiled 36×48 in poster |
+| `submission/ci2026-poster.tex` | ACM CI 2026 poster writeup source |
+| `submission/ci2026-poster.pdf` | ACM CI 2026 poster writeup (submit to EasyChair) |
 | `research/RESEARCH.md` | Research brief and citations |
 
 ## Requirements
@@ -44,6 +46,23 @@ make poster
 Output: `poster/agents-unite-poster.pdf`
 
 The poster summarizes the problem, architecture, economics, leader-election flow, and future directions for conference submission. To change size (for example A0), edit `paperwidth` / `paperheight` in `poster/agents-unite-poster.tex`.
+
+## ACM CI 2026 poster submission
+
+Build the 2-page ACM-formatted poster writeup for [ACM Collective Intelligence 2026 Posters & Demos](https://ci.acm.org/2026/posters-demos.html):
+
+```bash
+make ci-poster
+```
+
+Output: `submission/ci2026-poster.pdf`
+
+Requirements met:
+- ACM `acmart` manuscript format
+- Non-anonymous (author included)
+- Main body under 2 pages; references may extend beyond
+- Deadline: July 16, 2026 (11:59 pm AoE)
+- Submit via EasyChair; select **CI** topic affiliation
 
 ## Paper zip
 

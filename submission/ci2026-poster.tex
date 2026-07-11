@@ -1,0 +1,111 @@
+% ACM CI 2026 Poster submission (non-archival, non-anonymous)
+% Main body must be <= 2 pages; references may extend beyond.
+\documentclass[manuscript,screen,review]{acmart}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{Bib\TeX}}}
+
+\setcopyright{none}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{}
+\acmISBN{}
+\acmConference[CI '26]{ACM Collective Intelligence 2026}{September 27--30, 2026}{Virginia Tech, USA}
+\acmBooktitle{Posters of the 14th ACM Collective Intelligence Conference (CI '26), September 27--30, 2026, Virginia Tech, USA}
+
+\ccsdesc[500]{Human-centered computing~Collaborative and social computing systems and tools}
+\ccsdesc[300]{Computing methodologies~Multi-agent systems}
+\ccsdesc[300]{Applied computing~Economics}
+
+\title{Agents Unite: Crowdsourced LLM Agents as a Git-Native Financial Memory}
+
+\author{Parag Paul}
+\affiliation{%
+  \institution{RIG AI}
+  \city{Remote}
+  \country{USA}
+}
+\email{parag@rigai.co}
+
+\renewcommand{\shortauthors}{Paul}
+
+\begin{abstract}
+Large language model (LLM) agents can synthesize market narratives at scale, but solo deployments waste tokens, discard history, and miss timezone-specific information. We present \emph{Agents Unite}, an architecture that treats GitHub as a collective memory substrate for distributed financial intelligence. Each participant runs a scheduled local agent that researches one deterministically assigned ticker per day, submits a structured report as a pull request, and optionally serves as a verifier or consensus writer. Raft-style leader election resolves hourly write conflicts; reputation-weighted aggregation merges independent reports into a dated ledger. The design applies collective intelligence ideas---task decomposition, diversity, and consensus---without blockchain infrastructure: Git commits, CI validation, and CODEOWNERS provide auditability. Per-operator inference cost drops from hundreds of dollars per day for solo full-universe coverage to roughly five cents per contributor per day; readers fork the archive at zero marginal inference cost. This poster presents an early proof-of-concept architecture and invites feedback on assignment, verification, and herding mitigation before a public benchmark evaluation.
+\end{abstract}
+
+\keywords{collective intelligence, human-AI collaboration, multi-agent systems, crowdsourcing, financial data}
+
+\begin{document}
+\maketitle
+
+\section{Motivation and Collective Intelligence Framing}
+Financial markets generate narrative, sentiment, and price information faster than any single analyst or agent can absorb. Recent LLM agents help, but three failures persist in solo deployments: \emph{ephemeral memory} (yesterday's analysis must be regenerated at full cost), \emph{budget exhaustion} (covering thousands of tickers daily costs hundreds to thousands of dollars in API tokens), and \emph{temporal blind spots} (a single timezone misses overnight filings and foreign-market chatter).
+
+Agents Unite reframes market research as a \textbf{crowd intelligence} problem rather than a single-agent scaling problem~\cite{agentsunite}. Instead of one operator researching the entire universe, many contributors each research one ticker per cycle. Assignment is deterministic---contributors cannot cherry-pick popular symbols---and roles (research, verify, consensus) are assigned at run time by a scheduled local runner. The system is designed for human-AI complementarity: humans may contribute manually or run agents with different model providers (hosted APIs, local models, or coding-agent adapters), while CI and peer verifiers provide lightweight quality control.
+
+This work is affiliated with the \textbf{collective intelligence (CI)} track: it studies how decentralized agents, diverse information sources, and consensus mechanisms combine into a longitudinal memory that no individual node could economically maintain alone.
+
+\section{System Design}
+Figure~\ref{fig:pipeline} summarizes the pipeline. There is no central application server; GitHub is the database.
+
+\begin{figure}[h]
+  \centering
+  \fbox{\parbox{0.92\linewidth}{\centering\vspace{0.4em}
+    Assign $\rightarrow$ Research $\rightarrow$ Validate $\rightarrow$ PR $\rightarrow$ CI $\rightarrow$ Verify $\rightarrow$ Consensus $\rightarrow$ \texttt{data/DATE/TICKER/}
+  \vspace{0.4em}}}
+  \caption{End-to-end ingestion: local agents produce reports; GitHub CI and peer verifiers gate merges.}
+  \Description{A linear pipeline from assignment through research, validation, pull request, CI, verification, consensus, and canonical data storage.}
+  \label{fig:pipeline}
+\end{figure}
+
+\textbf{Deterministic assignment.} Ticker $T_k$ is chosen by hashing the date and contributor identity modulo universe size $|T|$. A parallel lottery assigns roles, adjusted by a CI-generated coverage manifest that prioritizes under-covered sectors, geographies, and modalities.
+
+\textbf{Verification without expensive re-research.} Verifiers inspect public pull requests using smaller models and deterministic consistency checks on cited sources, escalating uncertain claims to yes/no or cross-encoder natural language inference checks. Participants do not pre-declare as verifiers; the schedule decides.
+
+\textbf{Hourly leader election.} For Phase~3 hourly shards, multiple pull requests may arrive for the same \texttt{(date, ticker, hour)}. After the hour window closes, CI recomputes
+\[
+  \text{leader}=\arg\min_i \mathrm{SHA256}(\text{date}:\text{hour}:\text{ticker}:\text{hash}_i)
+\]
+among schema-valid submissions. Only the leader merges into the canonical path. Provenance is recorded in the pull request, merge commit, and per-ticker metadata.
+
+\textbf{Consensus.} Validated sentiment scores pass through median aggregation with median absolute deviation outlier rejection, then a reputation-weighted median. Source-diversity weighting is proposed to mitigate herding when contributors cite the same wire story~\cite{da2020}.
+
+\section{Economics and Early Evidence}
+Table~\ref{tab:econ} contrasts solo regeneration with crowd contribution. The gain is per-operator burden reduction: aggregate work still happens, but it is spread across contributors and reused by readers who fork the ledger.
+
+\begin{table}[h]
+  \caption{Illustrative per-operator annual costs (July 2026 API list rates).}
+  \label{tab:econ}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    \textbf{Path} & \textbf{Cost} \\
+    \midrule
+    Solo full-universe (budget) & $\sim$\$73k/yr \\
+    Solo full-universe (mid) & $\sim$\$219k/yr \\
+    \textbf{Agents Unite contributor} & \textbf{$\sim$\$18/yr} \\
+    \textbf{Agents Unite reader} & \textbf{\$0 inference} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+External work on federated inference-tree sharing suggests pooled agent memory can sharply outperform single-node caches at fixed false-accept rates~\cite{folklore2026}; Agents Unite aims to test an analogous effect on ticker-day financial queries once a public benchmark exists. Empirical validation---sentiment factor backtests, ledger reuse, verification cost, and adversarial probes---is planned for a follow-on paper after benchmark release.
+
+\section{Poster Contribution and Discussion Questions}
+This poster presents an \textbf{early architecture} for turning fragmented agent labor into a compounding public memory. We seek feedback on four open design choices:
+\begin{enumerate}
+  \item Whether deterministic assignment plus source-diversity weighting is sufficient to limit herding~\cite{da2020}.
+  \item How much verification can be delegated to cheap binary checks versus full agentic re-research.
+  \item Whether Git-native coordination is adequate at multi-thousand-report-per-day scale without hybrid columnar snapshots.
+  \item What governance model, if any, should steward a cross-asset narrative ledger as participation grows.
+\end{enumerate}
+
+Outputs are structured observations, not investment advice. A companion architecture paper and conference poster provide additional detail; a live demo repository is under active development.
+
+\begin{acks}
+We thank early contributors who tested schema and CI workflows.
+\end{acks}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{../paper/references}
+
+\end{document}

@@ -1,4 +1,4 @@
-.PHONY: all paper clean research verify zip arxiv poster
+.PHONY: all paper clean research verify zip arxiv poster ci-poster
 
 all: paper zip
 
@@ -11,6 +11,12 @@ paper:
 poster:
 	cd poster && pdflatex -interaction=nonstopmode agents-unite-poster.tex
 	cd poster && pdflatex -interaction=nonstopmode agents-unite-poster.tex
+
+ci-poster:
+	cd submission && pdflatex -interaction=nonstopmode ci2026-poster.tex
+	cd submission && bibtex ci2026-poster
+	cd submission && pdflatex -interaction=nonstopmode ci2026-poster.tex
+	cd submission && pdflatex -interaction=nonstopmode ci2026-poster.tex
 
 verify:
 	./scripts/verify-pdf.sh
