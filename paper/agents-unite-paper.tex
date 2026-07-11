@@ -514,9 +514,16 @@ We introduce the term \textbf{Raft census} to describe the periodic aggregation 
   \item \textbf{Immutable}: raw reports persist alongside canonical merges in Git history.
 \end{enumerate}
 
-This mirrors statistical sampling: each agent is an enumerator, verifiers are auditors, and consensus is official tabulation. Backtesting and RAG below consume census output; they are downstream uses of the ledger, not additional consensus steps.
+This mirrors statistical sampling: each agent is an enumerator, verifiers are auditors, and consensus is official tabulation.
 
-\subsection{Downstream Use: Backtesting Methodology}
+%=============================================================================
+\section{Downstream Use of the Ledger}
+\label{sec:downstream}
+%=============================================================================
+
+The census produces a versioned history under \texttt{data/YYYY-MM-DD/TICKER/}. Researchers and agents consume that archive after merge; backtesting and RAG are not consensus steps.
+
+\subsection{Backtesting Methodology}
 
 Quant researchers can construct sentiment factors from \texttt{consensus\_score} or raw \texttt{sentiment\_score} distributions:
 
@@ -530,7 +537,7 @@ Quant researchers can construct sentiment factors from \texttt{consensus\_score}
 
 Because every report includes \texttt{prompt\_hash} and source URLs, backtests are \textbf{reproducible}, a requirement absent from proprietary terminal feeds.
 
-\subsection{Downstream Use: RAG and LLM Queries}
+\subsection{RAG and LLM Queries}
 
 The Phase~2 pipeline embeds reports into a searchable index and knowledge graph (\texttt{wiki/}). Example queries enabled by longitudinal memory:
 
