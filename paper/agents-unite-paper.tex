@@ -36,7 +36,7 @@
   \textit{RIG AI}\\
   \small\texttt{parag@rigai.co}
 }
-\date{June--September 2025}
+\date{}
 
 \begin{document}
 
@@ -91,7 +91,7 @@ FiQA & 66.0\% & 94.5\% & +43.3\% \\
 \end{tabular}
 \end{table}
 
-Crowdsourced forecasting has a longer history. Estimize showed that open earnings estimates can beat sell-side consensus~\cite{estimize,jame2016}, and later field experiments forced a redesign: visible peer estimates induced herding, so the platform went blind~\cite{da2020}. Static corpora like DLT-Sentiment-News~\cite{dlt-sentiment} prove demand for open financial labels but ship no live contribution loop. Agents Unite differs on outputs (narrative reports, not scalar EPS), assignment (deterministic, not self-selected), and draft isolation. Section~\ref{sec:estimize} returns to the herding question.
+Crowdsourced forecasting has a longer history. Estimize showed that open earnings estimates can beat sell-side consensus~\cite{estimize,jame2016}, and later field experiments forced a redesign: visible peer estimates induced herding, so the platform went blind~\cite{da2020}. Static corpora like DLT-Sentiment-News~\cite{dlt-sentiment} prove demand for open financial labels but ship no live contribution loop. Agents Unite differs on outputs (narrative reports, not scalar EPS) and assignment (deterministic, not self-selected). Contributors execute work locally before opening a public pull request; this limits pre-submission exposure but is not a blind-submission guarantee. Section~\ref{sec:estimize} returns to the herding question.
 
 On the data side, lakeFS~\cite{lakefs}, Project Nessie~\cite{nessie}, and DuckLake~\cite{ducklake} bring Git-like branching to data lakes by splitting metadata from bulky objects. Agents Unite borrows the same split in reverse: small, reviewable reports stay in Git; analytics read from columnar snapshots (Section~\ref{sec:scalability}).
 
@@ -207,8 +207,8 @@ Agents Unite targets spend on \textbf{regenerated agent research} and \textbf{na
 \centering
 \caption{Indicative annual stack costs (2025--2026 published or surveyed averages).}
 \label{tab:annual-stack}
-\scriptsize
-\begin{tabular}{@{}lp{3.6cm}r@{}}
+\tiny
+\begin{tabular}{@{}p{2.25cm}p{3.0cm}r@{}}
 \toprule
 \textbf{Stack element} & \textbf{Source / basis} & \textbf{\$/yr} \\
 \midrule
@@ -253,7 +253,7 @@ Bloomberg Terminal (1 seat) & \$31{,}980/yr~\cite{bloomberg-cost} & 31{,}980 \\
 \subsection{Precedent and Divergence from Estimize}
 \label{sec:estimize}
 
-Estimize showed that open crowds can improve earnings-expectation measurement when contributor counts are large~\cite{jame2016,estimize}. Agents Unite shares the crowd premise but diverges on three axes. Outputs are structured narrative reports with sources, not scalar EPS/revenue points. Ticker assignment is deterministic, so contributors cannot concentrate on popular names. And drafts are independent until merge, approximating Estimize's post-2015 blind design~\cite{da2020}. The product is closer to a longitudinal belief census than to a competing IBES-style estimate feed.
+Estimize showed that open crowds can improve earnings-expectation measurement when contributor counts are large~\cite{jame2016,estimize}. Agents Unite shares the crowd premise but diverges on two axes. Outputs are structured narrative reports with sources, not scalar EPS/revenue points. Ticker assignment is deterministic, so contributors cannot concentrate on popular names. A contributor's agent works in its local clone before it opens a public pull request; once opened, that pull request is visible to reviewers and other users. Thus, the current design does \emph{not} claim Estimize-style blind submission. The product is closer to a longitudinal belief census than to a competing IBES-style estimate feed.
 
 \paragraph{Herding risk.}
 Da and Huang~\cite{da2020} show that viewing peer forecasts causes contributors to underweight private information, improving individual accuracy while harming consensus. Agents Unite faces an analogous risk if early-merged reports, public leaderboards, or RAG over yesterday's consensus become focal points that later agents imitate. Schema validation and MAD outlier rejection blunt crude spam, but they do not by themselves restore informational independence when agents share training corpora, news wires, or retrieved context.
@@ -305,7 +305,19 @@ Ticker selection prevents manipulation:
 \begin{equation}
   k = \text{SHA256}(\text{date} : \text{contributor\_hash}) \bmod |T|
 \end{equation}
-The assigned ticker is $T_k$ from a sorted, community-maintained universe file. Role selection uses a parallel hash lottery: $\sim$65\% research, $\sim$20\% verify, $\sim$15\% consensus~\cite{roles}.
+The assigned ticker is $T_k$ from a sorted, community-maintained universe file. Initial role selection uses a parallel hash lottery: $\sim$65\% research, $\sim$20\% verify, $\sim$15\% consensus~\cite{roles}; coverage and reputation adjustments follow.
+
+\subsection{Participant Setup and Operating Modes}
+
+Each participant installs the repository once, completes a provider configuration, and starts a scheduled local runner. The runner selects the day's ticker and role at run time, executes the assigned workflow, validates its output, and opens a pull request without requiring the user to choose a symbol, write a prompt, or manually submit a report. A participant therefore does not pre-declare that their installation is a verifier: the scheduled assignment determines whether it researches, verifies, or aggregates. The design separates the workflow from the model provider through adapters, allowing a participant to choose an approved hosted model, a local model, or a coding-agent/Composer environment exposed through a compatible adapter. Each report records the model family and \texttt{prompt\_hash}, so later evaluation can separate model effects from ticker and role effects.
+
+Autonomy is optional. A manual path presents the same assignment and schema to a human analyst, who may attach sourced observations directly; a non-agentic scripted path can populate deterministic market-data fields without generative inference. Both paths enter the same local validation, CI, verifier, and consensus gates as agent-generated reports. The ledger therefore treats participation mode as provenance, not as a different trust tier.
+
+When the role is verification, the runner can invoke a smaller, lower-cost model rather than a full research agent. Numerical assertions can first pass through deterministic tick-and-tie consistency checks, an approach exemplified by Tie's document-quality-control system~\cite{tieqc}; uncertain or semantic claims then escalate to the yes/no and cross-encoder cascade in Section~\ref{sec:cheap-verify}. This keeps the expensive model available for research while preserving an auditable verification trail.
+
+\subsection{Coverage-Aware Role Allocation}
+
+The hash lottery supplies an unbiased initial role choice, but a static 65/20/15 split cannot guarantee useful coverage. A CI-generated coverage manifest records the current date's completed and pending reports by sector, ticker, geography, modality, and role. The local runner reads that manifest before assignment: under-covered slices receive higher assignment probability, while saturated slices are deprioritized. Reputation adds a second constraint. New participants are preferentially assigned research or low-risk verification work; consensus and high-impact verification require a minimum reputation and recent validation record. This makes roles randomized at the margin while steering aggregate capacity toward gaps that the CI dashboard can observe.
 
 \subsection{Report Schema}
 
@@ -432,38 +444,8 @@ Treating Git as a write-heavy database has a known failure mode. Package ecosyst
 Agents Unite therefore proposes a \textbf{hybrid storage path}: Git retains commits, PR review, CODEOWNERS, and per-report provenance (the collaboration substrate), while periodic \textbf{columnar snapshots} (Parquet/DuckDB-style exports keyed by date) serve analytics, RAG embedding jobs, and cold readers who need history without a full clone (mirroring the metadata/data split in lakeFS, Nessie, and DuckLake)~\cite{lakefs,nessie,ducklake}. Phase~4 Merkle roots of those snapshots can be attested on-chain (e.g., MINT-style anchoring~\cite{mint}) without moving private contributor data on-chain, connecting operational scale-out to the existing attestation roadmap. In this design, Git remains the system of record for contribution and dispute; snapshots are the system of record for bulk consumption.
 
 %=============================================================================
-\section{Foundation Governance}
-\label{sec:foundation}
-%=============================================================================
-
-Sustainable open data requires neutral stewardship. We propose the \textbf{Open Financial Memory Foundation (OFMF)}, modeled on the Apache Software Foundation~\cite{apache}:
-
-\begin{figure}[h]
-\centering
-\resizebox{0.9\columnwidth}{!}{%
-\begin{tikzpicture}[
-  level/.style={draw, rounded corners, minimum width=2.8cm, minimum height=0.5cm, font=\scriptsize, align=center},
-  arr/.style={-{Stealth[length=2mm]}}
-]
-  \node[level, fill=blue!10] (board) {Board of Directors};
-  \node[level, fill=green!10, below=0.5cm of board] (pmc) {PMC (Core Maintainers)};
-  \node[level, fill=yellow!10, below left=0.5cm and 0.3cm of pmc] (eq) {Equities WG};
-  \node[level, fill=yellow!10, below=0.5cm of pmc] (crypto) {Crypto WG};
-  \node[level, fill=yellow!10, below right=0.5cm and 0.3cm of pmc] (intl) {Intl.\ WG};
-  \draw[arr] (board) -- (pmc);
-  \draw[arr] (pmc) -- (eq);
-  \draw[arr] (pmc) -- (crypto);
-  \draw[arr] (pmc) -- (intl);
-\end{tikzpicture}%
-}
-\caption{OFMF governance: Apache-style meritocracy with asset-class working groups.}
-\label{fig:foundation}
-\end{figure}
-
-Key principles: (i)~individual merit over corporate affiliation; (ii)~immutable core (\texttt{scripts/}, \texttt{agents/}) protected by CODEOWNERS; (iii)~tagged dataset releases for reproducible backtests; (iv)~501(c)(3) structure to resist vendor capture.
-
-%=============================================================================
 \section{Adversarial Robustness and the Contribution Attack Surface}
+\label{sec:adversarial}
 %=============================================================================
 
 Open ingestion expands the attack surface beyond spam. Three Phase~1 gaps remain; proposed defenses below are provisional.
@@ -478,7 +460,7 @@ Phase~1 reputation lives in \texttt{contributors/reputation.json} keyed by GitHu
 Contributor Guard and offline schema validation block malformed PRs and protected-path edits; they do not judge factual correctness, source authenticity, or coordinated narrative capture. CI is a necessary integrity gate, not a sufficient epistemic one. Human review, verifier diversity, and ex-post accuracy scoring remain load-bearing, and currently under-specified relative to the threat.
 
 %=============================================================================
-\section{Future Implications}
+\section{Future Directions and Implications}
 %=============================================================================
 
 For traders, one forkable ledger replaces repeated full-market agent runs. Consensus gating cuts single-model false positives. The cost arithmetic lands in Section~\ref{sec:monetary}: readers shift from DIY regeneration or vendor renewals toward contribute-or-fork paths, while price history stays \`a la carte.
@@ -487,7 +469,11 @@ For agent builders, canonical prompts and harness adapters create a portable rep
 
 For society, the stakes are access. Narrative features locked behind terminal subscriptions become versioned and free to read. Global timezone coverage turns contributor geography into infrastructure.
 
-The risks are real. Manipulation and poisoned sources require stronger attestation over time (Section~9). The system produces structured observations, not investment advice.
+The longer-term opportunity is a narrative ledger: a dated, source-linked record of how market explanations, themes, and disagreements evolved, rather than a collection of isolated scores. Such a ledger can preserve the context that disappears when an agent session ends and make later questions, audits, and backtests answerable against the information available at the time.
+
+Neutral stewardship is also a future proposal, not a present dependency. If the ledger reaches broad multi-asset participation, an \textbf{Open Financial Memory Foundation (OFMF)} could adopt Apache-style governance~\cite{apache}: individual merit over corporate affiliation, protected core workflows, and tagged releases for reproducible research. Whether to form such an entity should follow demonstrated contributor demand and governance design work.
+
+The risks are real. Manipulation and poisoned sources require stronger attestation over time (Section~\ref{sec:adversarial}). The system produces structured observations, not investment advice.
 
 \paragraph{Regulatory context.}
 FINRA~\cite{finra2409} and SEC examination priorities~\cite{sec2025exams} apply when firms use generative AI in advisory workflows. Agents Unite is an MIT-licensed observation archive, not a registered adviser; commercial wrappers that personalize consensus scores inherit those duties. ``Observations, not advice'' labeling remains a first-order control.
@@ -596,19 +582,6 @@ The Phase~2 pipeline embeds reports into a searchable index and knowledge graph 
 
 These queries run against crowd-collected history at fork cost (Section~\ref{sec:monetary}).
 
-\subsection{Pending Empirical Evaluation}
-\label{sec:pending-eval}
-
-The following measurements are required before claiming production efficacy; \texttt{research/EXPERIMENTS.md} provides runbooks:
-
-\begin{enumerate}[label=\arabic*.]
-  \item \textbf{Sentiment factor backtest}: quintile spreads and IC for $h\in\{1,5,20\}$; needs $\geq$60 trading days and a price API (Table~\ref{tab:market-data}).
-  \item \textbf{Ledger reuse vs.\ solo cache}: recall@1 at fixed false-accept on held-out ticker-day queries (Table~\ref{tab:federation}).
-  \item \textbf{Verify cascade}: \$/decision and human agreement for re-research, yes/no, and cross-encoder NLI (Section~\ref{sec:cheap-verify}).
-  \item \textbf{Source-diversity weights}: held-out calibration against equal-weight and stake-only aggregation (Section~\ref{sec:estimize}).
-  \item \textbf{Adversarial probes}: injection and Sybil attack-success rates after CI and verifier checks; then revise Section~9.
-\end{enumerate}
-
 %=============================================================================
 \section{Comparison with Related Architectures}
 %=============================================================================
@@ -634,13 +607,31 @@ DLT-Sentiment & \xmark & \cmark & \xmark \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:related} summarizes the trade-off: Git-native deployability over on-chain finality (Section~2), with optional Phase~4 anchoring for tamper evidence.
+Table~\ref{tab:related} summarizes the trade-off: Git-native deployability over on-chain finality (Section~\ref{sec:git-substrate}), with optional Phase~4 anchoring for tamper evidence.
 
 %=============================================================================
 \section{Conclusion}
 %=============================================================================
 
 Agents Unite demonstrates that \textbf{blockchain \emph{ideas} (consensus, stake-weighted trust, immutable history) need not require blockchain \emph{infrastructure}} when Git, CI, and open governance suffice. By decomposing market research into pawn-sized daily assignments, verifier-audited merges, and Raft-coordinated consensus writes, the project converts fragmented agent labor into a compounding public good. The moat is history; the mechanism is the crowd; the invitation is open.
+
+%=============================================================================
+\appendix
+\section{Evaluation Plan}
+\label{app:evaluation}
+%=============================================================================
+
+The following evaluations are required before claims of production efficacy. They are proposed measurements, not reported Agents Unite results. The appropriate vehicle for those results is a future empirical paper after a public benchmark and its evaluation protocol have been established.
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Sentiment factor backtest.} Test quintile spreads, information coefficients, and confidence intervals for one-, five-, and twenty-day forward returns after at least 60 trading days of reports. Compare modality-specific scores with the combined consensus.
+  \item \textbf{Shared-ledger reuse.} At a fixed false-accept rate, compare recall@1 for relevant historical answers retrieved from the shared ledger with a single participant's cache. The Folklore results in Table~\ref{tab:federation} are an external analogy, not a substitute for this evaluation.
+  \item \textbf{Verification cascade.} Measure cost per decision, latency, and agreement with human labels for three treatments: full re-research, a yes/no verifier, and a cross-encoder followed by a verifier only when confidence is low.
+  \item \textbf{Source-diversity weighting.} Compare equal-weight, reputation-only, and source-diversity-weighted aggregation on held-out dates. The study should ablate URL-domain, modality, and model-family diversity independently.
+  \item \textbf{Adversarial probes.} Measure prompt-injection acceptance and coordinated Sybil influence under the CI and verifier gates. These outcomes should determine revisions to the threat model rather than serve as a pre-committed claim of robustness.
+\end{enumerate}
+
+The benchmark should publish task definitions, temporal splits, source-availability rules, baselines, evaluation metrics, and a fixed test set or held-out evaluation service. Only then can results on reuse, verification quality, predictive value, and robustness be compared reproducibly across model families and participation modes.
 
 %=============================================================================
 \section*{Acknowledgments}
