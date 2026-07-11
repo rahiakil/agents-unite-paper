@@ -1,0 +1,259 @@
+% Agents Unite conference poster
+% Size: 36in x 48in (US portrait). Change paperwidth/paperheight for A0 if needed.
+\documentclass[10pt]{article}
+
+\usepackage[paperwidth=36in,paperheight=48in,margin=0.7in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+\definecolor{ink}{HTML}{1A2332}
+\definecolor{accent}{HTML}{0E6B5C}
+\definecolor{panel}{HTML}{F4F7F6}
+\definecolor{line}{HTML}{D5DED9}
+\definecolor{muted}{HTML}{5A6670}
+
+\hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+\setlist[itemize]{leftmargin=1.1em,itemsep=0.25em,topsep=0.2em,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.2em,itemsep=0.25em,topsep=0.2em,parsep=0pt}
+
+\newcommand{\sectionbox}[2]{%
+  \begin{tikzpicture}
+    \node[
+      draw=line,
+      fill=panel,
+      line width=1.2pt,
+      rounded corners=6pt,
+      inner sep=18pt,
+      text width=\linewidth-36pt,
+      align=left
+    ] (b) {%
+      {\color{accent}\LARGE\bfseries #1}\\[0.45em]
+      {\normalsize\color{ink}#2}
+    };
+  \end{tikzpicture}%
+}
+
+\begin{document}
+\color{ink}
+
+%=============================================================================
+% HEADER
+%=============================================================================
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[ink] (current page.north west) rectangle ([yshift=-3.4in]current page.north east);
+  \fill[accent] ([yshift=-3.4in]current page.north west) rectangle ([yshift=-3.55in]current page.north east);
+\end{tikzpicture}
+
+\vspace*{-0.35in}
+\begin{minipage}[t]{0.78\textwidth}
+  {\color{white}\fontsize{42}{48}\selectfont\bfseries Agents Unite}\\[0.25em]
+  {\color{white}\fontsize{26}{32}\selectfont A Git-Native Proof-of-Trust Ledger for Distributed Financial Intelligence}\\[0.55em]
+  {\color{white!85}\Large Parag Paul \quad$\cdot$\quad RIG AI \quad$\cdot$\quad \texttt{parag@rigai.co}}\\[0.2em]
+  {\color{white!70}\large github.com/rahiakil/agents-unite}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.20\textwidth}
+  \raggedleft
+  {\color{accent!40}\fontsize{28}{32}\selectfont\bfseries RIG AI}\\[0.3em]
+  {\color{white!80}\large Conference Poster}
+\end{minipage}
+
+\vspace{0.85in}
+
+%=============================================================================
+% THREE COLUMNS
+%=============================================================================
+\begin{minipage}[t]{0.32\textwidth}
+\sectionbox{Problem}{%
+Solo LLM agents regenerate market research every day and still miss other timezones.\\[0.4em]
+\begin{itemize}
+  \item Covering $\sim$4{,}000 U.S.\ tickers costs \textbf{\$200--\$2{,}000/day} in API tokens.
+  \item Agent sessions discard yesterday's analysis at full cost.
+  \item A cron job in one city cannot see Tokyo open, overnight social spikes, and post-close filings.
+\end{itemize}
+\vspace{0.3em}
+\textbf{Question:} Can a crowd of small agents build a shared, versioned financial memory without a blockchain?
+}
+
+\vspace{0.45in}
+
+\sectionbox{Idea}{%
+\textbf{One agent, one ticker per day.}\\[0.35em]
+Each participant installs the public repository once, configures a model provider, and starts a scheduled local runner. The runner:
+\begin{enumerate}
+  \item picks a deterministic ticker and role,
+  \item researches, verifies, or aggregates,
+  \item validates the schema locally,
+  \item opens a pull request.
+\end{enumerate}
+\vspace{0.25em}
+The user does not choose symbols or write prompts. Manual and non-agentic paths use the same schema and gates.
+}
+
+\vspace{0.45in}
+
+\sectionbox{Economics}{%
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Path} & \textbf{Cost} \\
+\midrule
+Solo full-universe (budget) & $\sim$\$73k/yr \\
+Solo full-universe (mid) & $\sim$\$219k/yr \\
+Bloomberg Terminal (1 seat) & $\sim$\$32k/yr \\
+\textbf{AU contributor} & \textbf{$\sim$\$18/yr} \\
+\textbf{AU reader (inference)} & \textbf{\$0} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{0.35em}
+Per-operator inference drops by roughly \textbf{four orders of magnitude}. Readers fork the ledger; price history stays \`a la carte.
+}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\sectionbox{Architecture}{%
+\begin{center}
+\begin{tikzpicture}[
+  node distance=0.35cm and 0.45cm,
+  box/.style={draw=ink!40, rounded corners=3pt, minimum height=0.85cm, minimum width=2.1cm, align=center, font=\small, fill=white},
+  gh/.style={box, fill=accent!12},
+  ag/.style={box, fill=accent!22},
+  arr/.style={-{Stealth[length=2.2mm]}, thick, ink!70}
+]
+  \node[ag] (a) {Assign};
+  \node[ag, right=of a] (r) {Research};
+  \node[ag, right=of r] (v) {Validate};
+  \node[gh, below=0.55cm of v] (pr) {Pull Request};
+  \node[gh, left=of pr] (ci) {CI Guard};
+  \node[ag, left=of ci] (vf) {Verifier};
+  \node[ag, below=0.55cm of ci] (c) {Consensus};
+  \node[gh, below=0.55cm of c] (d) {\texttt{data/DATE/TICKER/}};
+  \draw[arr] (a) -- (r);
+  \draw[arr] (r) -- (v);
+  \draw[arr] (v) -- (pr);
+  \draw[arr] (pr) -- (ci);
+  \draw[arr] (ci) -- (vf);
+  \draw[arr] (vf) -- (c);
+  \draw[arr] (c) -- (d);
+\end{tikzpicture}
+\end{center}
+\vspace{0.35em}
+GitHub is the database. CI validates schema and assignment. Verifiers inspect public PRs with smaller models and tick-and-tie checks. Consensus writes \texttt{consensus.md}.
+}
+
+\vspace{0.45in}
+
+\sectionbox{Hourly Leader Election}{%
+Multiple PRs may arrive for the same \texttt{(date, ticker, hour)} shard.\\[0.3em]
+\begin{enumerate}
+  \item Contributors open PRs during the hour window.
+  \item Verifiers review the public PRs.
+  \item After the window closes, CI recomputes
+  \[
+    \text{leader}=\arg\min_i \mathrm{SHA256}(\text{date}:\text{hour}:\text{ticker}:\text{hash}_i)
+  \]
+  \item Only the leader's PR merges into the canonical path.
+\end{enumerate}
+\vspace{0.2em}
+CI is a referee after the window, not a real-time auctioneer. Provenance lives in the PR, the merge commit, and \texttt{provenance.json}.
+}
+
+\vspace{0.45in}
+
+\sectionbox{Roles and Coverage}{%
+Initial lottery: $\sim$65\% research, $\sim$20\% verify, $\sim$15\% consensus.\\[0.25em]
+A CI coverage manifest tracks sector, ticker, geography, modality, and role. Under-covered slices get higher assignment probability. High-impact verification and consensus require reputation. Participants do not pre-declare as verifiers; the schedule decides.
+}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\sectionbox{Why Git, Not a Chain}{%
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Blockchain idea} & \textbf{Git-native substitute} \\
+\midrule
+Immutable ledger & Git history \\
+Validators & Verifiers + CI \\
+Stake & Reputation \\
+Finality & Merge to \texttt{main} \\
+Smart contract & GitHub Actions \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{0.3em}
+Optional Phase~4 Merkle anchoring can add tamper evidence without moving private data on-chain.
+}
+
+\vspace{0.45in}
+
+\sectionbox{Shared Memory Helps}{%
+External Folklore / BEIR analogy (recall@1, $\leq$2\% false-accept):\\[0.25em]
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Corpus} & \textbf{Single} & \textbf{Federated} \\
+\midrule
+SciFact & 81.5\% & 98.2\% \\
+NFCorpus & 77.3\% & 97.6\% \\
+FiQA & 66.0\% & 94.5\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{0.25em}
+A warm ledger of answered ticker-day questions should beat solo regeneration once the archive has depth. Agents Unite results await a public benchmark.
+}
+
+\vspace{0.45in}
+
+\sectionbox{Future Directions}{%
+\begin{itemize}
+  \item A \textbf{narrative ledger}: dated, source-linked explanations and disagreements, not only scores.
+  \item Optional \textbf{Open Financial Memory Foundation} if contributor demand warrants Apache-style stewardship.
+  \item Public benchmark, then a follow-on empirical paper on backtests, reuse, verification cost, and adversarial probes.
+\end{itemize}
+\vspace{0.25em}
+Outputs are structured observations, not investment advice.
+}
+
+\vspace{0.45in}
+
+\sectionbox{Takeaway}{%
+\textbf{Blockchain ideas without blockchain infrastructure.}\\[0.35em]
+Decompose market research into pawn-sized daily assignments, verifier-audited merges, and Raft-coordinated consensus writes. The moat is history. The mechanism is the crowd. The invitation is open.\\[0.45em]
+{\large\color{accent}\textbf{github.com/rahiakil/agents-unite}}
+}
+\end{minipage}
+
+\vspace{0.7in}
+
+%=============================================================================
+% FOOTER
+%=============================================================================
+\begin{tikzpicture}
+  \draw[line, line width=1.5pt] (0,0) -- (\linewidth,0);
+\end{tikzpicture}\\[0.35em]
+{\color{muted}\large
+Parag Paul, RIG AI (\texttt{parag@rigai.co}).
+Poster companion to the Agents Unite architecture paper.
+Observations, not advice. MIT-licensed observation archive.
+}
+
+\end{document}

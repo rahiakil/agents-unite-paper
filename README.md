@@ -9,6 +9,8 @@ Six-page research paper for [Agents Unite](https://github.com/rahiakil/agents-un
 | `paper/agents-unite-paper.tex` | LaTeX source |
 | `paper/agents-unite-paper.pdf` | Compiled paper |
 | `paper/references.bib` | Bibliography |
+| `poster/agents-unite-poster.tex` | Conference poster source |
+| `poster/agents-unite-poster.pdf` | Compiled 36×48 in poster |
 | `research/RESEARCH.md` | Research brief and citations |
 
 ## Requirements
@@ -30,6 +32,18 @@ make paper
 ```
 
 Output: `paper/agents-unite-paper.pdf`
+
+## Conference poster
+
+Build the 36×48 inch portrait poster:
+
+```bash
+make poster
+```
+
+Output: `poster/agents-unite-poster.pdf`
+
+The poster summarizes the problem, architecture, economics, leader-election flow, and future directions for conference submission. To change size (for example A0), edit `paperwidth` / `paperheight` in `poster/agents-unite-poster.tex`.
 
 ## Paper zip
 

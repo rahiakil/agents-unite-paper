@@ -1,4 +1,4 @@
-.PHONY: all paper clean research verify zip arxiv
+.PHONY: all paper clean research verify zip arxiv poster
 
 all: paper zip
 
@@ -7,6 +7,10 @@ paper:
 	cd paper && bibtex agents-unite-paper
 	cd paper && pdflatex -interaction=nonstopmode agents-unite-paper.tex
 	cd paper && pdflatex -interaction=nonstopmode agents-unite-paper.tex
+
+poster:
+	cd poster && pdflatex -interaction=nonstopmode agents-unite-poster.tex
+	cd poster && pdflatex -interaction=nonstopmode agents-unite-poster.tex
 
 verify:
 	./scripts/verify-pdf.sh
@@ -22,6 +26,7 @@ arxiv: paper/agents-unite-paper.tex paper/references.bib paper/agents-unite-pape
 
 clean:
 	rm -f paper/*.aux paper/*.bbl paper/*.blg paper/*.log paper/*.out paper/*.pdf paper.zip arxiv-submission.zip
+	rm -f poster/*.aux poster/*.log poster/*.out poster/*.pdf
 
 research:
 	@echo "Research brief: research/RESEARCH.md"
