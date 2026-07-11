@@ -6,6 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{hyperref}
 \usepackage{xurl}
 \usepackage{xcolor}
@@ -201,18 +202,18 @@ Agents Unite targets spend on \textbf{regenerated agent research} and \textbf{na
 \centering
 \caption{Indicative annual stack costs (2025--2026 published or surveyed averages).}
 \label{tab:annual-stack}
-\tiny
-\begin{tabular}{@{}p{2.25cm}p{3.0cm}r@{}}
+\scriptsize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.5cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{1.4cm}@{}}
 \toprule
 \textbf{Stack element} & \textbf{Source / basis} & \textbf{\$/yr} \\
 \midrule
 Bloomberg Terminal (1 seat) & Industry-reported 2026 list~\cite{bloomberg-cost} & $\sim$31{,}980 \\
 Alt-data (avg.\ per dataset) & Neudata buyer survey~\cite{neudata2024} & $\sim$80{,}000 \\
 Alt-data (avg.\ fund budget) & Neudata ($n{=}60$ buyers)~\cite{neudata2024} & $\sim$1.6M \\
-Retail EOD API (Tiingo Power) & Vendor pricing~\cite{tiingo-pricing} & 360 \\
-Intraday/history API (Polygon Adv.) & Vendor pricing~\cite{polygon-pricing} & 2{,}388 \\
-Solo LLM full-universe (budget) & \$200/day $\times$ 365 (Table~\ref{tab:api-rates}) & $\sim$73{,}000 \\
-Solo LLM full-universe (mid) & \$600/day $\times$ 365 & $\sim$219{,}000 \\
+Retail EOD API (Tiingo) & Vendor pricing~\cite{tiingo-pricing} & 360 \\
+Intraday/history API (Polygon) & Vendor pricing~\cite{polygon-pricing} & 2{,}388 \\
+Solo LLM (budget) & \$200/day $\times$ 365 (Table~\ref{tab:api-rates}) & $\sim$73{,}000 \\
+Solo LLM (mid) & \$600/day $\times$ 365 & $\sim$219{,}000 \\
 \textbf{AU contributor} & \$0.05/day $\times$ 365 & \textbf{$\sim$18} \\
 \textbf{AU yes/no verify (est.)} & $\ll$\$0.01/check $\times$ 365 & \textbf{$\ll$\$4} \\
 \textbf{AU reader (inference)} & Fork ledger & \textbf{0} \\
