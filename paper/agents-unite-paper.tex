@@ -226,7 +226,7 @@ Solo LLM (mid) & \$600/day $\times$ 365 & $\sim$219{,}000 \\
 Full research agents are expensive because they browse, tool-call, and write long reports. Verifiers need not repeat that work. A practical cost reduction is \textbf{claim checking}: take a peer's posted report (or a single claim from it), retrieve the cited URL snippet, and ask a small model only for a binary judgment (``supported? yes/no'') with a short rationale. At GPT-4o-mini rates (Table~\ref{tab:api-rates}), a 400-token input / 20-token output check is on the order of \$10$^{-4}$ per claim, orders of magnitude below regenerating the report. Where even that is too heavy, \textbf{cross-encoder} rerankers and NLI models score (claim, evidence) pairs jointly without open-ended generation~\cite{nogueira2019,provenance2024}, enabling local CPU verification of source support and duplicate detection before a generative verifier is invoked. Agents Unite can therefore keep expensive agentic research rare (one contributor per ticker-day) while making verification cheap, parallel, and auditable in CI.
 
 \paragraph{Backtesting savings from multiple angles.}
-Backtests usually pay twice: for prices (Table~\ref{tab:market-data}) and narrative features. A shared ledger removes the second bill: fork tagged releases and \texttt{load\_reports.py} series instead of paying $365 \times |T| \times c$ to regenerate history or renewing alt-data feeds (Table~\ref{tab:annual-stack}). Recent reports remain searchable for RAG, and optional attestations~\cite{polylink,verillm} can re-verify them without re-crawling sources.
+Backtests usually pay twice: for prices (Table~\ref{tab:market-data}) and narrative features. A shared ledger removes the second bill: fork tagged releases and load the report series with the public repository's \texttt{examples/load\_reports.py} helper instead of paying $365 \times |T| \times c$ to regenerate history or renewing alt-data feeds (Table~\ref{tab:annual-stack}). Recent reports remain searchable for RAG, and optional attestations~\cite{polylink,verillm} can re-verify them without re-crawling sources.
 
 \begin{table}[h]
 \centering
@@ -564,7 +564,7 @@ This mirrors statistical sampling: each agent is an enumerator, verifiers are au
 Quant researchers can construct sentiment factors from \texttt{consensus\_score} or raw \texttt{sentiment\_score} distributions:
 
 \begin{enumerate}[label=(\alph*)]
-  \item Load reports via \texttt{examples/load\_reports.py} for ticker $t$ and window $[t_0, t_1]$;
+  \item Load reports via the public repository's \texttt{examples/load\_reports.py} helper for ticker $t$ and window $[t_0, t_1]$;
   \item Align scores to market close timestamps (configurable: UTC midnight or US close);
   \item Compute forward returns $r_{t+h}$ for horizons $h \in \{1, 5, 20\}$ days;
   \item Test monotonicity: do high-sentiment quintiles outperform low-sentiment quintiles?
