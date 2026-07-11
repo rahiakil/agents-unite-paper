@@ -45,7 +45,7 @@
 \maketitle
 \begin{abstract}
 \noindent
-Autonomous LLM agents can synthesize market sentiment, news flow, and technical context at scale. Solo deployments hit two walls: token costs that scale linearly with universe coverage, and temporal blind spots no single timezone can close. We present \textbf{Agents Unite}, an open-source architecture that treats a single GitHub repository as a distributed financial memory layer. Each contributor spends about \$0.05 of inference per day on one deterministically assigned ticker; a solo operator covering $\sim$4{,}000 U.S.\ names pays \$200--\$2{,}000 for the same day. Reports land as pull requests. Verifier and consensus agents, coordinated by Raft-style leader election and stake-weighted reputation, merge independent analyses into a canonical ledger. Git workflows stand in for blockchain infrastructure: CI for validation, CODEOWNERS for trust, immutable prompt hashes for audit. The archive supports backtesting, RAG, and longitudinal evaluation across equities, crypto, ETFs, and bonds. Readers who fork the ledger pay nothing. Per-operator token burden drops by four orders of magnitude. History becomes the moat. We propose an \emph{Open Financial Memory Foundation}, Apache-style but scoped to verifiable market intelligence, to steward it.
+An LLM agent is a capable research assistant, but a lone agent is a poor one: every session starts from scratch and burns tokens as if the market had no memory. We describe \textbf{Agents Unite}, a way to turn GitHub into a shared financial memory layer. The idea is simple: one agent, one ticker per day. Each contributor runs a small scheduled agent locally, pays roughly five cents of inference for one assigned ticker, and submits the report as a pull request. A contributor in Sydney can cover the Tokyo open; one in San Francisco can catch after-hours filings; a few thousand of them can cover more names than any single analyst. Verifier and consensus agents merge the reports into a dated ledger, using Raft-style leader election and a reputation-weighted vote. Blockchain infrastructure is unnecessary because Git already provides commits, CI, CODEOWNERS, and immutable prompt hashes. The ledger is a free public good to read, fork, backtest, or plug into RAG. It cuts the per-operator inference burden by roughly four orders of magnitude and turns accumulated history into the main moat.
 \end{abstract}
 \vspace{0.5em}
 \end{@twocolumnfalse}
@@ -55,17 +55,11 @@ Autonomous LLM agents can synthesize market sentiment, news flow, and technical 
 \section{Introduction}
 %=============================================================================
 
-Financial markets generate narrative, sentiment, and price information faster than any individual, human or agent, can absorb. Retail and institutional participants increasingly delegate synthesis to LLM agents, yet three structural failures persist:
+Financial markets generate narrative, sentiment, and price data faster than any single analyst can absorb. LLM agents help, but they also waste money and context: a terminal session ends, and yesterday's NVDA memo is gone. A solo attempt to cover $\sim$4{,}000 U.S.\ tickers daily with multi-step agentic research runs hundreds to thousands of dollars in API tokens per day at July 2026 list rates (Table~\ref{tab:api-rates}) for a fixed report schema of roughly 1{,}800 input and 700 output tokens plus harness overhead~\cite{openai-pricing,deepseek-pricing,architecture}. Time compounds the problem. A single cron job in Austin will miss Tokyo open chatter, overnight Reddit spikes, and post-close filings.
 
-\begin{enumerate}[label=\arabic*.]
-  \item \textbf{Ephemeral memory.} Agent sessions discard work at termination; yesterday's NVDA analysis must be regenerated at full cost.
-  \item \textbf{Budget exhaustion.} Covering $\sim$4{,}000 U.S.\ tickers daily with multi-step agentic research costs on the order of hundreds to thousands of dollars in API tokens per run when priced at July 2026 list rates (Table~\ref{tab:api-rates}) and a fixed report schema of $\sim$1{,}800 input / $\sim$700 output tokens plus harness overhead~\cite{openai-pricing,deepseek-pricing,architecture}.
-  \item \textbf{Timezone asymmetry.} A cron job in Austin misses Tokyo open chatter, overnight Reddit spikes, and post-close filings.
-\end{enumerate}
+\textbf{Agents Unite}~\cite{agentsunite} changes the shape of the problem. Instead of one operator researching the whole market, the crowd researches one ticker each. Assignment is deterministic, so contributors cannot cherry-pick symbols. Outputs land in a versioned path \texttt{data/YYYY-MM-DD/TICKER/}. Git history becomes the asset: every belief is a commit, every merge is consensus, and every fork is a derivative index.
 
-\textbf{Agents Unite}~\cite{agentsunite} reframes the problem: instead of one operator researching the entire market, \emph{the crowd researches one ticker each}. Assignment is deterministic (contributors cannot cherry-pick symbols), and outputs land in a versioned path \texttt{data/YYYY-MM-DD/TICKER/}. Git history becomes the asset: every belief is a commit, every merge is consensus, every fork is a derivative index.
-
-This paper formalizes the architecture, draws analogies to distributed consensus and proof-of-stake, and outlines governance via an Apache-style foundation. The biggest moat is not the code. It is history.
+This paper formalizes the architecture, draws analogies to distributed consensus and proof-of-stake, and sketches how governance might work under an Apache-style foundation. The biggest moat is not the code. It is history.
 
 %=============================================================================
 \section{Related Work}
@@ -463,15 +457,11 @@ Contributor Guard and offline schema validation block malformed PRs and protecte
 \section{Future Directions and Implications}
 %=============================================================================
 
-For traders, one forkable ledger replaces repeated full-market agent runs. Consensus gating cuts single-model false positives. The cost arithmetic lands in Section~\ref{sec:monetary}: readers shift from DIY regeneration or vendor renewals toward contribute-or-fork paths, while price history stays \`a la carte.
+The immediate payoff for traders is straightforward: fork the ledger and stop regenerating the same market memos every morning. For agent builders, the value is portability. A contributor who repeatedly submits accurate work builds a reputation that survives across jobs and forks. For society, the value is access; narrative features locked behind terminal subscriptions become versioned and free to read, and contributor geography becomes a 24-hour coverage map.
 
-For agent builders, canonical prompts and harness adapters create a portable reputation. A contributor who consistently merges accurate calls carries that record across employers and forks.
+The longer-term direction is a narrative ledger, not just a sentiment scoreboard. Markets move on explanations, not numbers. If a stock drops 10\% overnight, the useful question is often what story was told before the drop. A dated, source-linked record of themes and disagreements preserves the context that otherwise vanishes when an agent session ends. It also makes later audits and backtests answerable against the information available at the time, rather than against today's memory.
 
-For society, the stakes are access. Narrative features locked behind terminal subscriptions become versioned and free to read. Global timezone coverage turns contributor geography into infrastructure.
-
-The longer-term opportunity is a narrative ledger: a dated, source-linked record of how market explanations, themes, and disagreements evolved, rather than a collection of isolated scores. Such a ledger can preserve the context that disappears when an agent session ends and make later questions, audits, and backtests answerable against the information available at the time.
-
-Neutral stewardship is also a future proposal, not a present dependency. If the ledger reaches broad multi-asset participation, an \textbf{Open Financial Memory Foundation (OFMF)} could adopt Apache-style governance~\cite{apache}: individual merit over corporate affiliation, protected core workflows, and tagged releases for reproducible research. Whether to form such an entity should follow demonstrated contributor demand and governance design work.
+Governance is part of that same future. If the ledger reaches broad multi-asset participation, an \textbf{Open Financial Memory Foundation (OFMF)} could adopt Apache-style stewardship~\cite{apache}: merit over corporate affiliation, protected core workflows, and tagged releases for reproducible research. Whether to form such an entity should follow demonstrated contributor demand, not the reverse.
 
 The risks are real. Manipulation and poisoned sources require stronger attestation over time (Section~\ref{sec:adversarial}). The system produces structured observations, not investment advice.
 
@@ -636,7 +626,7 @@ The benchmark should publish task definitions, temporal splits, source-availabil
 %=============================================================================
 \section*{Acknowledgments}
 %=============================================================================
-The Agents Unite open-source community and the maintainers of \url{github.com/rahiakil/agents-unite}.
+We are grateful to the early contributors who filed reports, tested CI workflows, and argued over the schema. The paper is ours; the bugs are the authors'.
 
 \bibliographystyle{plain}
 \bibliography{references}
