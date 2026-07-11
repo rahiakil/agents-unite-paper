@@ -391,6 +391,18 @@ Among contributors who submitted valid hourly reports, the minimum hash wins wri
 \label{fig:raft}
 \end{figure}
 
+\subsection{PR Lifecycle, Merge Orchestration, and Provenance}
+
+The details above need clarification. A contributor opens a PR as soon as local validation passes. The PR is public, so verifiers can inspect the report, sources, and \texttt{prompt\_hash} without any prior private channel. Verifiers do not need to be pre-assigned; they are participants whose scheduled role for that cycle is verification, and they review the PR by running a smaller model or a deterministic consistency check against the cited URLs.
+
+For a given \texttt{(date, ticker, hour)} shard, multiple PRs may arrive between 11:00 and 11:59. The leader is not decided at 11:01. A scheduled CI job runs at the close of the hour plus a short grace period, collects all PRs that passed schema and source checks, and recomputes the minimum hash. The winner is announced by a CI check. Only the winner's PR is merged into the canonical path; the others are closed with a note pointing to the winner's report. Non-leader reports can still be valuable, so their content may be absorbed as verifier comments or attributed themes in the consensus file, but the canonical score path is written by the leader.
+
+The leader is therefore not a privileged account. The leader is simply the contributor whose hash happens to be smallest for that shard. The leader's PR may contain their own research report, or, if they are assigned the consensus role, it may contain the aggregated \texttt{consensus.md} that combines the valid reports from that shard. In either case, the merge commit contains the hash, timestamp, contributor identity, and the \texttt{prompt\_hash} of the generation path.
+
+Provenance is stored at three levels. The PR itself contains the original report and sources. The merge commit records the SHA, author, and CI checks. The per-ticker directory contains a \texttt{provenance.json} entry with the list of contributing reports, verifier approvals, and the deterministic leader hash. Any reader can later trace a score back to the exact inputs, model, and reviewer set that produced it.
+
+This design means CI is not a real-time orchestrator. It is a referee that runs after the hour closes. The actual orchestration is the deterministic hash plus the GitHub merge queue: PRs arrive, verifiers inspect them, and at the end of the window CI decides which one lands.
+
 \subsection{Proof-of-Stake Analogy}
 
 Ethereum's proof-of-stake selects validators proportional to staked ETH~\cite{ethereum-pos}. Agents Unite's Phase~4 maps this to \textbf{reputation staking}:
