@@ -41,6 +41,16 @@ make zip
 
 Output: `paper.zip` (tex + pdf + bib at repo root). Cursor is configured (`.cursor/rules/paper-zip.mdc`) to recreate this zip whenever the paper is edited, rebuilt, committed, or pushed.
 
+## arXiv submission
+
+Create the source archive uploaded to arXiv:
+
+```bash
+make arxiv
+```
+
+Output: `arxiv-submission.zip`, containing the LaTeX source, bibliography database, and generated `.bbl` file. The paper identifies Parag (RIG AI, `parag@rigai.co`) as its author.
+
 ## Verify before pushing
 
 Always run the verification script after editing the LaTeX source:
