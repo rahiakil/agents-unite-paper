@@ -283,7 +283,13 @@ We propose weighting consensus not only by contributor count or stake, but by \t
 \section{System Architecture}
 %=============================================================================
 
-Figure~\ref{fig:arch} depicts the end-to-end pipeline. There is no central application server; \textbf{GitHub is the database}.
+Figure~\ref{fig:arch} depicts the end-to-end pipeline. There is no central application server; \textbf{GitHub is the database}. Three agent roles do the work, assigned per cycle by a hash lottery:
+
+\begin{itemize}
+  \item \textbf{Researcher agents} browse sources, synthesize narrative and price context, and emit a structured report with a bounded \texttt{sentiment\_score} $\in [-1,1]$, theme bullets, and cited URLs.
+  \item \textbf{Verifier agents} inspect a posted PR rather than re-deriving the report. They run cheap yes/no and cross-encoder checks against cited URLs (Section~\ref{sec:cheap-verify}) and approve, request changes, or reject.
+  \item \textbf{Consensus agents} collect the day's validated reports for an assigned ticker, run the weighted-median aggregation in Section~\ref{sec:weighted-median}, and merge the canonical \texttt{consensus.md}.
+\end{itemize}
 
 \begin{figure}[h]
 \centering
@@ -313,7 +319,7 @@ Figure~\ref{fig:arch} depicts the end-to-end pipeline. There is no central appli
   \draw[arr] (consensus) -- (data);
 \end{tikzpicture}%
 }
-\caption{Distributed ingestion pipeline. Each contributor machine runs assignment, research, and validation locally; GitHub CI and peer agents provide trust anchors.}
+\caption{Distributed ingestion pipeline. Each contributor machine runs assignment, research, and validation locally; GitHub CI and peer agents provide trust anchors. Verifier and consensus roles act on public PRs after submission.}
 \label{fig:arch}
 \end{figure}
 
@@ -327,7 +333,7 @@ The assigned ticker is $T_k$ from a sorted, community-maintained universe file. 
 
 \subsection{Participant Setup and Operating Modes}
 
-Each participant installs the repository once, completes a provider configuration, and starts a scheduled local runner. The runner selects the day's ticker and role at run time, executes the assigned workflow, validates its output, and opens a pull request without requiring the user to choose a symbol, write a prompt, or manually submit a report. A participant therefore does not pre-declare that their installation is a verifier: the scheduled assignment determines whether it researches, verifies, or aggregates. The design separates the workflow from the model provider through adapters, allowing a participant to choose an approved hosted model, a local model, or a coding-agent/Composer environment exposed through a compatible adapter. Each report records the model family and \texttt{prompt\_hash}, so later evaluation can separate model effects from ticker and role effects.
+Each participant installs the repository once, completes a provider configuration, and starts a scheduled local runner. The runner selects the day's ticker and role at run time, executes the assigned workflow, validates its output, and opens a pull request without requiring the user to choose a symbol, write a prompt, or manually submit a report. A participant therefore does not pre-declare that their installation is a verifier or consensus agent: the scheduled assignment determines whether it researches, verifies, or aggregates. The design separates the workflow from the model provider through adapters, allowing a participant to choose an approved hosted model, a local model, or a coding-agent/Composer environment exposed through a compatible adapter. Each report records the model family and \texttt{prompt\_hash}, so later evaluation can separate model effects from ticker and role effects.
 
 Autonomy is optional. A manual path presents the same assignment and schema to a human analyst, who may attach sourced observations directly; a non-agentic scripted path can populate deterministic market-data fields without generative inference. Both paths enter the same local validation, CI, verifier, and consensus gates as agent-generated reports. The ledger therefore treats participation mode as provenance, not as a different trust tier.
 
@@ -368,11 +374,34 @@ Role randomization splits each day's work into \textbf{complementary modalities}
 \label{fig:modalities}
 \end{figure}
 
+\subsection{Phased Rollout}
+\label{sec:phases}
+
+Agents Unite is designed to grow in five phases. Each phase adds a capability without invalidating earlier history; Table~\ref{tab:phases} summarizes the roadmap.
+
+\begin{table}[h]
+\centering
+\caption{Five-phase rollout roadmap.}
+\label{tab:phases}
+\scriptsize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.10\columnwidth}>{\raggedright\arraybackslash}p{0.25\columnwidth}>{\raggedright\arraybackslash}p{0.55\columnwidth}@{}}
+\toprule
+\textbf{Phase} & \textbf{Cadence / scope} & \textbf{What lands} \\
+\midrule
+1 & Daily, U.S.\ equities & Crowd ingestion, CI guards, verifier and consensus merge, reputation in \texttt{reputation.json} (no token). \\
+2 & Hourly + RAG index & Hourly shards, embedded report index and \texttt{wiki/} knowledge graph for downstream queries. \\
+3 & Hourly leader election & Deterministic Raft-style leader per \texttt{(date, ticker, hour)} shard, PR lifecycle referee, source-diversity weighting calibration. \\
+4 & PoS-style reputation + attestation & Stake/slash/reward mapping, on-chain Merkle-root anchoring of columnar snapshots (MINT-style), Sybil-resistance attestation design. \\
+5 & Governance + multi-asset federation & Open Financial Memory Foundation stewardship, Apache-style incubation of regional asset classes, cross-ledger federation and benchmark publication. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 %=============================================================================
 \section{Consensus and Distributed Coordination}
 %=============================================================================
 
-A single agent report is noisy. Agents Unite implements a \textbf{three-stage consensus pipeline} inspired by Raft~\cite{raft} and proof-of-stake validator networks~\cite{ethereum-pos}.
+A single agent report is noisy. Agents Unite implements a \textbf{three-stage consensus pipeline} inspired by Raft~\cite{raft} and proof-of-stake validator networks~\cite{ethereum-pos}: research agents produce scored reports, verifier agents validate them on the PR, and consensus agents aggregate the validated scores into \texttt{consensus.md}. Figure~\ref{fig:pipeline} shows the role pipeline.
 
 \begin{figure}[h]
 \centering
@@ -397,6 +426,9 @@ A single agent report is noisy. Agents Unite implements a \textbf{three-stage co
 \end{figure}
 
 \subsection{Weighted Median Aggregation}
+\label{sec:weighted-median}
+
+Before aggregation, each research agent emits a \texttt{sentiment\_score} $\in [-1,1]$ in the report's YAML frontmatter (Section~4.4), grounded in cited sources and modality-specific synthesis. After verifiers approve the PR on the public repo, the day's validated reports for a given ticker carry a set of scores $\{x_1, \ldots, x_n\}$, one per contributing research agent. The consensus agent's job is to turn those validated scores into a single canonical \texttt{consensus\_score} plus a preserved divergence record.
 
 Given $n$ validated scores $\{x_i\}$:
 \begin{enumerate}[label=(\roman*)]
@@ -606,7 +638,7 @@ The immediate payoff for traders is straightforward: fork the ledger and stop re
 
 The longer-term direction is a narrative ledger, not just a sentiment scoreboard. Markets move on explanations, not numbers. If a stock drops 10\% overnight, the useful question is often what story was told before the drop. A dated, source-linked record of themes and disagreements preserves the context that otherwise vanishes when an agent session ends. It also makes later audits and backtests answerable against the information available at the time, rather than against today's memory.
 
-Governance is part of that same future. If the ledger reaches broad multi-asset participation, an \textbf{Open Financial Memory Foundation (OFMF)} could adopt Apache-style stewardship~\cite{apache}: merit over corporate affiliation, protected core workflows, and tagged releases for reproducible research. Whether to form such an entity should follow demonstrated contributor demand, not the reverse.
+Governance is part of that same future, and it is the focus of Phase~5 (Table~\ref{tab:phases}). If the ledger reaches broad multi-asset participation, an \textbf{Open Financial Memory Foundation (OFMF)} could adopt Apache-style stewardship~\cite{apache}: merit over corporate affiliation, protected core workflows, and tagged releases for reproducible research. Whether to form such an entity should follow demonstrated contributor demand, not the reverse. Phase~5 also covers multi-asset federation and benchmark publication, turning the single-repo ledger into a family of interoperable regional ledgers under shared governance.
 
 The risks are real. Manipulation and poisoned sources require stronger attestation over time (Section~\ref{sec:adversarial}). The system produces structured observations, not investment advice.
 
