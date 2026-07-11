@@ -1,0 +1,8 @@
+arXiv submission metadata for Agents Unite.
+
+Main file: agents-unite-paper.tex
+Compiler:  pdflatex
+Bib style: plain
+Bib file:  references.bib (provided for reference; arXiv uses agents-unite-paper.bbl)
+
+Figures: generated inline with TikZ; no external image files.

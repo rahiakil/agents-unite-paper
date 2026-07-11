@@ -49,7 +49,9 @@ Create the source archive uploaded to arXiv:
 make arxiv
 ```
 
-Output: `arxiv-submission.zip`, containing the LaTeX source, bibliography database, and generated `.bbl` file. The paper identifies Parag (RIG AI, `parag@rigai.co`) as its author.
+Output: `arxiv-submission.zip` and `arxiv-submission.tar.gz`, containing the LaTeX source, bibliography database, generated `.bbl` file, and a `00README.XXX` metadata file. arXiv generally prefers the `.tar.gz`. The paper identifies Parag (RIG AI, `parag@rigai.co`) as its author.
+
+Before uploading, verify that the source compiles cleanly with pdflatex and that the generated `.bbl` is present.
 
 ## Verify before pushing
 

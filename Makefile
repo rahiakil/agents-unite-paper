@@ -15,9 +15,10 @@ zip: paper/agents-unite-paper.tex paper/agents-unite-paper.pdf paper/references.
 	rm -f paper.zip
 	zip -j paper.zip paper/agents-unite-paper.tex paper/agents-unite-paper.pdf paper/references.bib
 
-arxiv: paper/agents-unite-paper.tex paper/references.bib paper/agents-unite-paper.bbl
-	rm -f arxiv-submission.zip
-	zip -j arxiv-submission.zip paper/agents-unite-paper.tex paper/references.bib paper/agents-unite-paper.bbl
+arxiv: paper/agents-unite-paper.tex paper/references.bib paper/agents-unite-paper.bbl paper/00README.XXX
+	rm -f arxiv-submission.zip arxiv-submission.tar.gz
+	zip -j arxiv-submission.zip paper/agents-unite-paper.tex paper/references.bib paper/agents-unite-paper.bbl paper/00README.XXX
+	tar -czf arxiv-submission.tar.gz -C paper agents-unite-paper.tex references.bib agents-unite-paper.bbl 00README.XXX
 
 clean:
 	rm -f paper/*.aux paper/*.bbl paper/*.blg paper/*.log paper/*.out paper/*.pdf paper.zip arxiv-submission.zip
