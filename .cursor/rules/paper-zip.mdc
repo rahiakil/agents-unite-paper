@@ -1,0 +1,38 @@
+---
+description: Always rebuild paper.zip after paper changes
+alwaysApply: true
+---
+
+# Paper zip artifact
+
+Whenever you edit, rebuild, commit, or push this paper repo, **always create or refresh `paper.zip` at the repo root**.
+
+## Contents
+
+Include the submission-ready paper files (not LaTeX aux junk):
+
+- `paper/agents-unite-paper.tex`
+- `paper/agents-unite-paper.pdf`
+- `paper/references.bib`
+
+## How
+
+Prefer the Makefile target:
+
+```bash
+make zip
+```
+
+On Windows PowerShell if `make` is unavailable:
+
+```powershell
+Compress-Archive -Path paper/agents-unite-paper.tex,paper/agents-unite-paper.pdf,paper/references.bib -DestinationPath paper.zip -Force
+```
+
+## When
+
+- After rebuilding the PDF
+- Before committing or pushing paper changes
+- At the end of any session that touched `paper/*`
+
+Do not leave a stale `paper.zip` after source/PDF updates.

@@ -7,6 +7,7 @@
 \usepackage{lmodern}
 \usepackage{booktabs}
 \usepackage{hyperref}
+\usepackage{xurl}
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds}
@@ -43,7 +44,7 @@
 \maketitle
 \begin{abstract}
 \noindent
-Autonomous large language model (LLM) agents can synthesize market sentiment, news flow, and technical context at scale, yet solo deployments face a dual constraint: \emph{token economics} that scale linearly with universe coverage, and \emph{temporal blind spots} that no single timezone can close. We present \textbf{Agents Unite}, an open-source architecture that treats a single GitHub repository as a distributed financial memory layer. Thousands of contributors each spend approximately \$0.05 of inference per day on one deterministically assigned ticker (Figure~\ref{fig:costs}), submit structured reports via pull requests, and rely on verifier and consensus agents, coordinated by Raft-style leader election and proof-of-stake-inspired reputation weighting, to merge independent analyses into a canonical ledger. Unlike on-chain knowledge graphs, Agents Unite leverages existing Git workflows (CI validation, CODEOWNERS, immutable prompt hashes) as a lightweight consensus substrate. The resulting archive supports backtesting, retrieval-augmented generation (RAG), and longitudinal evaluation across equities, crypto, ETFs, and bonds. We argue this model reduces \emph{per-operator} token burden by four orders of magnitude, compounds history as the primary moat, and warrants a new class of open foundation, the \emph{Open Financial Memory Foundation}, analogous to the Apache Software Foundation but scoped to verifiable market intelligence.
+Autonomous large language model (LLM) agents can synthesize market sentiment, news flow, and technical context at scale, yet solo deployments face a dual constraint: \emph{token economics} that scale linearly with universe coverage, and \emph{temporal blind spots} that no single timezone can close. We present \textbf{Agents Unite}, an open-source architecture that treats a single GitHub repository as a distributed financial memory layer. Thousands of contributors each spend approximately \$0.05 of inference per day on one deterministically assigned ticker (versus roughly \$200--\$2{,}000 per day for a solo operator covering $\sim$4{,}000 U.S.\ names), submit structured reports via pull requests, and rely on verifier and consensus agents, coordinated by Raft-style leader election and proof-of-stake-inspired reputation weighting, to merge independent analyses into a canonical ledger. Unlike on-chain knowledge graphs, Agents Unite leverages existing Git workflows (CI validation, CODEOWNERS, immutable prompt hashes) as a lightweight consensus substrate. The resulting archive supports backtesting, retrieval-augmented generation (RAG), and longitudinal evaluation across equities, crypto, ETFs, and bonds at zero marginal inference cost for readers who fork the ledger. We argue this model reduces \emph{per-operator} token burden by four orders of magnitude, compounds history as the primary moat, and warrants a new class of open foundation, the \emph{Open Financial Memory Foundation}, analogous to the Apache Software Foundation but scoped to verifiable market intelligence.
 \end{abstract}
 \vspace{0.5em}
 \end{@twocolumnfalse}
@@ -57,7 +58,7 @@ Financial markets generate narrative, sentiment, and price information faster th
 
 \begin{enumerate}[label=\arabic*.]
   \item \textbf{Ephemeral memory.} Agent sessions discard work at termination; yesterday's NVDA analysis must be regenerated at full cost.
-  \item \textbf{Budget exhaustion.} Covering $\sim$4{,}000 U.S.\ tickers daily with agentic research consumes hundreds of dollars in tokens per run~\cite{agentsunite}.
+  \item \textbf{Budget exhaustion.} Covering $\sim$4{,}000 U.S.\ tickers daily with multi-step agentic research costs on the order of hundreds to thousands of dollars in API tokens per run when priced at July 2026 list rates (Table~\ref{tab:api-rates}) and a fixed report schema of $\sim$1{,}800 input / $\sim$700 output tokens plus harness overhead~\cite{openai-pricing,deepseek-pricing,architecture}.
   \item \textbf{Timezone asymmetry.} A cron job in Austin misses Tokyo open chatter, overnight Reddit spikes, and post-close filings.
 \end{enumerate}
 
@@ -69,13 +70,13 @@ This paper formalizes the architecture, draws precise analogies to distributed c
 \section{Related Work}
 %=============================================================================
 
-We situate Agents Unite along three adjacent literatures that each capture part of the design space---verifiable multi-agent memory, crowd financial forecasts, and Git-shaped data versioning---without combining them into a live, financial, PR-native ledger.
+We situate Agents Unite along three adjacent literatures (verifiable multi-agent memory, crowd financial forecasts, and Git-shaped data versioning) without combining them into a live, financial, PR-native ledger.
 
 \paragraph{Decentralized AI agent infrastructure.}
-OriginTrail's Decentralized Knowledge Graph anchors multi-agent memory with on-chain Merkle proofs and RDF-style knowledge objects~\cite{origintrail}; Akashik proposes peer-to-peer cooperative agent memory with provenance chains rather than a single canonical repository~\cite{akashik}; HadAgent couples harness-aware serving to proof-of-inference consensus on a blockchain substrate~\cite{hadagent}. Related inference-market systems (e.g., PolyLink, VeriLLM) similarly emphasize decentralized compute or verifiable generation over longitudinal market belief~\cite{polylink,verillm}. These systems prioritize cryptographic verifiability and often require nodes, tokens, or specialized runtimes. Agents Unite deliberately chooses \textbf{lower friction}: any developer with Git and an API key can contribute today, trading cryptographic finality for immediate deployability, with optional Phase~4 hash anchoring (Section~\ref{sec:git-substrate}).
+OriginTrail's Decentralized Knowledge Graph anchors multi-agent memory with on-chain Merkle proofs and RDF-style knowledge objects~\cite{origintrail}; Akashik proposes peer-to-peer cooperative agent memory with provenance chains rather than a single canonical repository~\cite{akashik}; HadAgent couples harness-aware serving to proof-of-inference consensus on a blockchain substrate~\cite{hadagent}. PolyLink and VeriLLM emphasize decentralized or publicly verifiable inference quality~\cite{polylink,verillm}: matching work to capable nodes and attesting that a claimed generation actually ran. Agents Unite is complementary. It stores the \emph{artifacts} of inference (dated reports, sources, prompt hashes) in a searchable Git ledger so that today's query over recent market belief is cheaper and more auditable than regenerating the same research. Downstream consumers can still route heavy generation through PolyLink-style markets or VeriLLM-style proofs; the ledger makes the resulting observations reusable and comparable across models. These systems often require nodes, tokens, or specialized runtimes. Agents Unite deliberately chooses \textbf{lower friction}: any developer with Git and an API key can contribute today, trading cryptographic finality for immediate deployability, with optional Phase~4 hash anchoring (Section~\ref{sec:git-substrate}).
 
 \paragraph{Crowdsourced financial forecasting.}
-Estimize~\cite{estimize} demonstrated that open crowds can produce earnings forecasts incrementally useful relative to sell-side consensus, with accuracy improving in crowd size and consensus revisions carrying short-horizon return information~\cite{jame2016}. Follow-on field experiments show that visible peer estimates induce herding that improves individual accuracy while degrading consensus quality---motivating Estimize's shift to a blind submission design~\cite{da2020}. Static crowdsourced sentiment corpora such as DLT-Sentiment-News~\cite{dlt-sentiment} further evidence demand for open financial labels, but lack a live contribution workflow. Agents Unite inherits the crowd-wisdom premise but targets unstructured narrative and sentiment rather than point EPS estimates, and enforces independence via deterministic assignment and pre-merge draft isolation (Section~\ref{sec:estimize}).
+Estimize~\cite{estimize} demonstrated that open crowds can produce earnings forecasts incrementally useful relative to sell-side consensus, with accuracy improving in crowd size and consensus revisions carrying short-horizon return information~\cite{jame2016}. Follow-on field experiments show that visible peer estimates induce herding that improves individual accuracy while degrading consensus quality, which motivated Estimize's shift to a blind submission design~\cite{da2020}. Static crowdsourced sentiment corpora such as DLT-Sentiment-News~\cite{dlt-sentiment} further evidence demand for open financial labels, but lack a live contribution workflow. Agents Unite inherits the crowd-wisdom premise but targets unstructured narrative and sentiment rather than point EPS estimates, and enforces independence via deterministic assignment and pre-merge draft isolation (Section~\ref{sec:estimize}).
 
 \paragraph{Git-native agent and data patterns.}
 lakeFS~\cite{lakefs}, Project Nessie~\cite{nessie}, and DuckLake~\cite{ducklake} bring Git-like branching, commits, and time travel to data lakes by versioning \emph{metadata} while leaving bulky objects in columnar or object storage. That separation is the operational lesson for any ledger that expects both human-readable diffs and analytical scale. Agents Unite applies the dual insight in reverse for agent-written research: Git remains the collaboration and audit substrate for small structured reports, while scale-out analytics can later consume periodic columnar snapshots rather than cloning the full history (Section~\ref{sec:scalability}).
@@ -84,7 +85,23 @@ lakeFS~\cite{lakefs}, Project Nessie~\cite{nessie}, and DuckLake~\cite{ducklake}
 \section{Problem Formulation}
 %=============================================================================
 
-Let $T$ denote the ticker universe ($|T| \approx 4{,}000$), $C$ the daily active contributors, and $c$ the per-report inference cost. Using published API rates and Agents Unite's fixed report schema ($\sim$1,800 input and $\sim$700 output tokens per report~\cite{architecture}), a single-ticker run costs $\sim$\$0.001 on GPT-4o-mini~\cite{openai-pricing} or DeepSeek V4-Flash~\cite{deepseek-pricing}. With typical harness overhead (3--8 tool calls for source gathering), we estimate $c \approx \$0.05$ (range \$0.02--\$0.08 depending on model and adapter~\cite{agentsunite}).
+Let $T$ denote the ticker universe ($|T| \approx 4{,}000$), $C$ the daily active contributors, and $c$ the per-report inference cost. Table~\ref{tab:api-rates} lists July 2026 published per-million-token rates used throughout this paper. Combined with Agents Unite's fixed report schema ($\sim$1,800 input and $\sim$700 output tokens per report~\cite{architecture}), a single-ticker completion costs $\sim$\$0.001 on GPT-4o-mini~\cite{openai-pricing} or DeepSeek V4-Flash~\cite{deepseek-pricing}. With typical harness overhead (3--8 tool calls for source gathering), we estimate $c \approx \$0.05$ (range \$0.02--\$0.08 depending on model and adapter).
+
+\begin{table}[h]
+\centering
+\caption{Recent published LLM API list prices (July 2026).}
+\label{tab:api-rates}
+\scriptsize
+\begin{tabular}{@{}llrr@{}}
+\toprule
+\textbf{Model} & \textbf{Vendor page} & \textbf{Input \$/M} & \textbf{Output \$/M} \\
+\midrule
+GPT-4o-mini & OpenAI~\cite{openai-pricing} & 0.15 & 0.60 \\
+DeepSeek V4-Flash & DeepSeek~\cite{deepseek-pricing} & 0.14 & 0.28 \\
+Gemini 2.5 Flash-Lite & Google~\cite{gemini-pricing} & 0.10 & 0.40 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 Solo coverage cost is $O(|T| \cdot c)$: one operator researching the full universe spends $\sim$\$200--\$2{,}000/day (Figure~\ref{fig:costs}). Crowd coverage is $O(C \cdot c)$: each contributor spends only $c$, while readers fork the ledger at zero marginal inference cost. The economic gain is therefore \textbf{per-operator burden reduction}, not elimination of aggregate work:
 
@@ -111,7 +128,7 @@ Input (canonical prompt) & 1,800 & \$0.15/M\cite{openai-pricing} & \$0.00027 \\
 Output (structured report) & 700 & \$0.60/M\cite{openai-pricing} & \$0.00042 \\
 Harness overhead ($\sim$5$\times$) & \multicolumn{2}{c}{tool calls, browsing} & \$0.0035 \\
 \midrule
-\textbf{Typical Agents Unite report} & \multicolumn{2}{c}{budget--premium harness} & \textbf{\$0.05} \\
+\textbf{Typical Agents Unite report} & \multicolumn{2}{c}{budget to premium harness} & \textbf{\$0.05} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -137,7 +154,7 @@ Harness overhead ($\sim$5$\times$) & \multicolumn{2}{c}{tool calls, browsing} & 
   }
 \end{tikzpicture}%
 }
-\caption{Average daily inference cost by coverage model for a $\sim$4{,}000-ticker universe. \emph{AU contrib}: one Agents Unite contributor (\$0.05/day). \emph{AU read}: fork and consume existing reports (\$0). \emph{Solo budget/mid/prem}: single operator at \$0.05, \$0.15, and \$0.50 per ticker. Rates from~\cite{openai-pricing,deepseek-pricing,agentsunite}.}
+\caption{Average daily inference cost by coverage model for a $\sim$4{,}000-ticker universe. \emph{AU contrib}: one Agents Unite contributor (\$0.05/day). \emph{AU read}: fork and consume existing reports (\$0). \emph{Solo budget/mid/prem}: single operator at \$0.05, \$0.15, and \$0.50 per ticker. Rates from Table~\ref{tab:api-rates}~\cite{openai-pricing,deepseek-pricing,gemini-pricing}.}
 \label{fig:costs}
 \end{figure}
 
@@ -161,6 +178,66 @@ Solo (premium, \$0.50/ticker) & $\sim$\$2{,}000 & $\sim$4{,}000 tickers \\
 \end{tabular}
 \end{table}
 
+\subsection{DIY Data vs.\ Contribute vs.\ Consume}
+\label{sec:monetary}
+
+The economic direction is not ``everyone regenerates the market,'' but a three-path choice:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{DIY (solo).} One operator pays full inference to cover $|T|$ tickers every day, plus any commercial research or alt-data subscriptions used as inputs. At \$0.05--\$0.50 per ticker (Table~\ref{tab:api-rates} plus harness), full-universe agent research alone is $\sim$\$200--\$2{,}000/day ($\sim$\$73k--\$730k/year at 365 days), before terminals or vendor feeds~\cite{openai-pricing,architecture}.
+  \item \textbf{Contribute.} Pay $\sim$\$0.05/day for one assigned ticker and merge into the shared ledger. The contributor's marginal cost buys coverage of \emph{their} assignment while unlocking read access to everyone else's history.
+  \item \textbf{Consume (fork/read).} Pay \$0 inference to clone the archive and run backtests or RAG over accumulated \texttt{sentiment\_score} series. Price bars for return alignment still require a market-data API; the avoided cost is regenerating years of narrative/sentiment research.
+\end{enumerate}
+
+Table~\ref{tab:annual-stack} places these paths against published 2025--2026 list prices for common research and backtesting stacks. Agents Unite does \emph{not} replace a Bloomberg seat's full terminal workflow or SIP-grade price history; it targets the overlapping spend on \textbf{regenerating agent research} and \textbf{buying narrative/sentiment-like alt-data} that funds otherwise repurchase annually.
+
+\begin{table}[h]
+\centering
+\caption{Indicative annual stack costs (2025--2026 published or surveyed averages).}
+\label{tab:annual-stack}
+\scriptsize
+\begin{tabular}{@{}lp{3.6cm}r@{}}
+\toprule
+\textbf{Stack element} & \textbf{Source / basis} & \textbf{\$/yr} \\
+\midrule
+Bloomberg Terminal (1 seat) & Industry-reported 2026 list~\cite{bloomberg-cost} & $\sim$31{,}980 \\
+Alt-data (avg.\ per dataset) & Neudata buyer survey~\cite{neudata2024} & $\sim$80{,}000 \\
+Alt-data (avg.\ fund budget) & Neudata ($n{=}60$ buyers)~\cite{neudata2024} & $\sim$1.6M \\
+Retail EOD API (Tiingo Power) & Vendor pricing~\cite{tiingo-pricing} & 360 \\
+Intraday/history API (Polygon Adv.) & Vendor pricing~\cite{polygon-pricing} & 2{,}388 \\
+Solo LLM full-universe (budget) & \$200/day $\times$ 365 (Table~\ref{tab:api-rates}) & $\sim$73{,}000 \\
+Solo LLM full-universe (mid) & \$600/day $\times$ 365 & $\sim$219{,}000 \\
+\textbf{AU contributor} & \$0.05/day $\times$ 365 & \textbf{$\sim$18} \\
+\textbf{AU yes/no verify (est.)} & $\ll$\$0.01/check $\times$ 365 & \textbf{$\ll$\$4} \\
+\textbf{AU reader (inference)} & Fork ledger & \textbf{0} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Cheap verification: yes/no and cross-encoders.}
+\label{sec:cheap-verify}
+Full research agents are expensive because they browse, tool-call, and write long reports. Verifiers need not repeat that work. A practical cost reduction is \textbf{claim checking}: take a peer's posted report (or a single claim from it), retrieve the cited URL snippet, and ask a small model only for a binary judgment (``supported? yes/no'') with a short rationale. At GPT-4o-mini rates (Table~\ref{tab:api-rates}), a 400-token input / 20-token output check is on the order of \$10$^{-4}$ per claim, orders of magnitude below regenerating the report. Where even that is too heavy, \textbf{cross-encoder} rerankers and NLI models score (claim, evidence) pairs jointly without open-ended generation~\cite{nogueira2019,provenance2024}, enabling local CPU verification of source support and duplicate detection before a generative verifier is invoked. Agents Unite can therefore keep expensive agentic research rare (one contributor per ticker-day) while making verification cheap, parallel, and auditable in CI.
+
+\paragraph{Backtesting savings from multiple angles.}
+Quant and retail researchers typically pay twice for history: once for \emph{prices} (Table~\ref{tab:market-data}) and again, often invisibly, for \emph{features} built from news, social, and LLM synthesis. Without a shared ledger, each backtest window re-runs agents over past dates or re-licenses sentiment/news products. Agents Unite collapses the second bill: tagged dataset releases and \texttt{load\_reports.py} time series are free to fork, so a one-year sentiment factor study costs market-data API fees only, not $365 \times |T| \times c$ in regenerated tokens. Relative to institutional alt-data norms ($\sim$\$80k per dataset; $\sim$\$1.6M average annual buyer spend across $\sim$20 vendors~\cite{neudata2024}), an open Raft census is a lower-fidelity but zero-license complement for narrative features. Relative to a $\sim$\$32k/year terminal seat~\cite{bloomberg-cost}, the archive is not a drop-in replacement, but it removes the need to burn terminal-assisted research cycles regenerating the same ticker-day memos. Recent days in the ledger are especially valuable: they are immediately searchable for RAG and can be quality-matched or re-verified under PolyLink/VeriLLM-style inference attestations~\cite{polylink,verillm} without re-crawling the open web. The compounding effect is temporal: every contributed day permanently lowers the future cost of backtesting that date.
+
+\begin{table}[h]
+\centering
+\caption{Recent published market-data API prices for backtesting labels (2026).}
+\label{tab:market-data}
+\scriptsize
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Product} & \textbf{Published rate} & \textbf{\$/yr} \\
+\midrule
+Tiingo Power (individual) & \$30/mo~\cite{tiingo-pricing} & 360 \\
+Polygon Stocks Starter & \$29/mo~\cite{polygon-pricing} & 348 \\
+Polygon Stocks Advanced & \$199/mo~\cite{polygon-pricing} & 2{,}388 \\
+Bloomberg Terminal (1 seat) & \$31{,}980/yr~\cite{bloomberg-cost} & 31{,}980 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Precedent and Divergence from Estimize}
 \label{sec:estimize}
 
@@ -170,7 +247,7 @@ Estimize established that open crowds can improve earnings-expectation measureme
 Da and Huang~\cite{da2020} show that viewing peer forecasts causes contributors to underweight private information, improving individual accuracy while harming consensus. Agents Unite faces an analogous risk if early-merged reports, public leaderboards, or RAG over yesterday's consensus become focal points that later agents imitate. Schema validation and MAD outlier rejection blunt crude spam, but they do not by themselves restore informational independence when agents share training corpora, news wires, or retrieved context.
 
 \paragraph{Proposed mitigation.}
-We propose weighting consensus not only by contributor count or stake, but by \textbf{source diversity}: reports whose cited URL domains, modality slices (sentiment/news/social/trading), and model families are more orthogonal receive higher influence in the weighted median. Homogeneous clusters---many accounts citing the same wire story through the same harness---should not dominate simply because $n$ is large. Formal calibration of diversity weights, and whether diversity should enter before or after MAD filtering, is left to Phase~3--4 evaluation.
+We propose weighting consensus not only by contributor count or stake, but by \textbf{source diversity}: reports whose cited URL domains, modality slices (sentiment/news/social/trading), and model families are more orthogonal receive higher influence in the weighted median. Homogeneous clusters (many accounts citing the same wire story through the same harness) should not dominate simply because $n$ is large. Formal calibration of diversity weights, and whether diversity should enter before or after MAD filtering, is left to Phase~3--4 evaluation.
 
 %=============================================================================
 \section{System Architecture}
@@ -259,7 +336,7 @@ Given $n$ validated scores $\{x_i\}$:
   \item Assign confidence: \emph{high} if $n \geq 3$ and spread $\leq 0.4$; \emph{low} if $n = 1$~\cite{consensus}.
 \end{enumerate}
 
-Themes are \emph{not} forced into agreement; divergence is preserved in \texttt{consensus.md}.
+Themes are \emph{not} forced into agreement; divergence is preserved in \texttt{consensus.md}. Verifier roles should prefer the cheap yes/no and cross-encoder path in Section~\ref{sec:cheap-verify} before spending a full research budget to re-derive the same memo.
 
 \subsection{Raft Leader Election for Hourly Shards}
 
@@ -338,9 +415,9 @@ Finality & Merged to \texttt{main} \\
 \subsection{Scalability and Operational Limits}
 \label{sec:scalability}
 
-Treating Git as a write-heavy database has a known failure mode. Package ecosystems that stored indexes in Git---crates.io's Cargo index, Homebrew taps, and nixpkgs-scale trees---eventually hit clone, fetch, and delta-resolution costs that forced sparse HTTP indexes, CDN JSON feeds, or channel tarballs~\cite{nesbitt2025}. A financial memory ledger that accumulates thousands of daily report files faces the same asymptotics: directory width, packfile growth, and CI clone time degrade before cryptographic consensus becomes the bottleneck. Shallow clones and sparse checkouts delay pain; they do not remove the need for a read path that is not ``git fetch the universe.''
+Treating Git as a write-heavy database has a known failure mode. Package ecosystems that stored indexes in Git (crates.io's Cargo index, Homebrew taps, and nixpkgs-scale trees) eventually hit clone, fetch, and delta-resolution costs that forced sparse HTTP indexes, CDN JSON feeds, or channel tarballs~\cite{nesbitt2025}. A financial memory ledger that accumulates thousands of daily report files faces the same asymptotics: directory width, packfile growth, and CI clone time degrade before cryptographic consensus becomes the bottleneck. Shallow clones and sparse checkouts delay pain; they do not remove the need for a read path that is not ``git fetch the universe.''
 
-Agents Unite therefore proposes a \textbf{hybrid storage path}: Git retains commits, PR review, CODEOWNERS, and per-report provenance (the collaboration substrate), while periodic \textbf{columnar snapshots} (Parquet/DuckDB-style exports keyed by date) serve analytics, RAG embedding jobs, and cold readers who need history without a full clone---mirroring the metadata/data split in lakeFS, Nessie, and DuckLake~\cite{lakefs,nessie,ducklake}. Phase~4 Merkle roots of those snapshots can be attested on-chain (e.g., MINT-style anchoring~\cite{mint}) without moving private contributor data on-chain, connecting operational scale-out to the existing attestation roadmap. In this design, Git remains the system of record for contribution and dispute; snapshots are the system of record for bulk consumption.
+Agents Unite therefore proposes a \textbf{hybrid storage path}: Git retains commits, PR review, CODEOWNERS, and per-report provenance (the collaboration substrate), while periodic \textbf{columnar snapshots} (Parquet/DuckDB-style exports keyed by date) serve analytics, RAG embedding jobs, and cold readers who need history without a full clone (mirroring the metadata/data split in lakeFS, Nessie, and DuckLake)~\cite{lakefs,nessie,ducklake}. Phase~4 Merkle roots of those snapshots can be attested on-chain (e.g., MINT-style anchoring~\cite{mint}) without moving private contributor data on-chain, connecting operational scale-out to the existing attestation roadmap. In this design, Git remains the system of record for contribution and dispute; snapshots are the system of record for bulk consumption.
 
 %=============================================================================
 \section{Longitudinal Memory and Downstream Use}
@@ -351,7 +428,7 @@ The repository layout \texttt{data/YYYY-MM-DD/TICKER/} creates a \textbf{census 
 \subsection{Backtesting and RAG}
 
 Downstream consumers load structured time series with the project loader script (\texttt{examples/load\_reports.py}), e.g.\ \texttt{--ticker NVDA --last 30}.
-Researchers can correlate \texttt{sentiment\_score} with forward returns, train custom models on labeled sentiment, or embed reports for LLM terminals. The Hugging Face \texttt{DLT-Sentiment-News} dataset~\cite{dlt-sentiment} demonstrates demand for crowdsourced financial sentiment; Agents Unite provides a \emph{live, versioned} alternative.
+Researchers can correlate \texttt{sentiment\_score} with forward returns, train custom models on labeled sentiment, or embed reports for LLM terminals. The Hugging Face \texttt{DLT-Sentiment-News} dataset~\cite{dlt-sentiment} demonstrates demand for crowdsourced financial sentiment; Agents Unite provides a \emph{live, versioned} alternative. As Section~\ref{sec:monetary} notes, the monetary win for backtesting is avoiding repeated LLM regeneration and proprietary narrative-feed renewals while retaining a modest price-API bill (e.g., Tiingo or Polygon~\cite{tiingo-pricing,polygon-pricing}) for return labels.
 
 \subsection{Asset-Class Expansion}
 
@@ -398,19 +475,19 @@ Key principles: (i)~individual merit over corporate affiliation; (ii)~immutable 
 Open ingestion of web sources into LLM research agents expands the attack surface beyond classical spam. We flag three gaps that Phase~1 CI and reputation stubs do not close; the discussion is diagnostic rather than a claim that the current stack is hardened.
 
 \paragraph{Indirect prompt injection via ingested sources.}
-Research agents retrieve filings, news pages, and social threads. Adversaries can embed instructions in those documents so that retrieved content overrides the agent's intended task---indirect prompt injection~\cite{greshake2023}. Schema checks and \texttt{prompt\_hash} bind the \emph{template}, not the retrieved payload. Verifier agents that re-read the same poisoned URLs may amplify rather than catch the attack. Candidate hardening directions include source sandboxing, explicit instruction/data delimiters, allowlisted domains, and verifier prompts that refuse to execute imperative language found in citations; none of these are asserted as sufficient without measurement.
+Research agents retrieve filings, news pages, and social threads. Adversaries can embed instructions in those documents so that retrieved content overrides the agent's intended task (indirect prompt injection)~\cite{greshake2023}. Schema checks and \texttt{prompt\_hash} bind the \emph{template}, not the retrieved payload. Verifier agents that re-read the same poisoned URLs may amplify rather than catch the attack. Candidate hardening directions include source sandboxing, explicit instruction/data delimiters, allowlisted domains, and verifier prompts that refuse to execute imperative language found in citations; none of these are asserted as sufficient without measurement.
 
 \paragraph{Sybil and identity gaps in reputation.}
 Phase~1 reputation lives in \texttt{contributors/reputation.json} keyed by GitHub identity. Cheap account creation, collusive rings, and recycled accuracy against a manipulable consensus remain open. MAD filters and merge-approval rates raise the cost of naive spam but do not constitute proof-of-human or stake-slashing. Claims about long-run Sybil resistance should await Phase~4 attestation design and measured attack simulations against the reputation update rule.
 
 \paragraph{Limits of CI as the only gate.}
-Contributor Guard and offline schema validation block malformed PRs and protected-path edits; they do not judge factual correctness, source authenticity, or coordinated narrative capture. CI is a necessary integrity gate, not a sufficient epistemic one. Human review, verifier diversity, and ex-post accuracy scoring remain load-bearing---and currently under-specified relative to the threat.
+Contributor Guard and offline schema validation block malformed PRs and protected-path edits; they do not judge factual correctness, source authenticity, or coordinated narrative capture. CI is a necessary integrity gate, not a sufficient epistemic one. Human review, verifier diversity, and ex-post accuracy scoring remain load-bearing, and currently under-specified relative to the threat.
 
 %=============================================================================
 \section{Future Implications}
 %=============================================================================
 
-\textbf{For traders.} A single forkable repository replaces repeated full-market agent runs. Consensus-gated signals reduce false positives from any one model.
+\textbf{For traders.} A single forkable repository replaces repeated full-market agent runs. Consensus-gated signals reduce false positives from any one model. Practically, the stack shifts from DIY regeneration (\$73k--\$730k/year of tokens for full-universe coverage) or vendor narrative/alt-data renewals toward contribute ($\sim$\$18/year) or read (\$0 inference) paths, with price history still purchased \`a la carte from EOD/intraday APIs~\cite{tiingo-pricing,polygon-pricing,neudata2024}.
 
 \textbf{For agent builders.} Canonical prompts, harness adapters, and a reputation economy create portable credentials: ``Stack Overflow for market calls.''
 
@@ -419,7 +496,7 @@ Contributor Guard and offline schema validation block malformed PRs and protecte
 \textbf{Risks.} Sybil attacks, coordinated manipulation, and hallucinated sources require escalating mitigations (proof-of-human, URL HEAD checks, on-chain attestation). The system explicitly disclaims investment advice; it produces \emph{structured observations}, not trade recommendations.
 
 \paragraph{Regulatory context.}
-U.S.\ securities regulators have not enacted AI-specific statutes for open research ledgers; instead, existing frameworks continue to apply when firms use generative tools in advisory or brokerage workflows. FINRA has stated that supervision, recordkeeping, and Regulation Best Interest obligations apply equally when member firms use generative AI~\cite{finra2409}, and the SEC's examination priorities flag AI-integrated advisory operations, marketing claims, and related disclosures~\cite{sec2025exams}. Agents Unite is designed as a public observation archive under an MIT license, not as a registered adviser or broker-dealer product; downstream commercial wrappers that turn consensus scores into personalized recommendations would inherit those obligations. Clear labeling---structured observations, not advice---remains a first-order compliance control for the foundation and for redistributors.
+U.S.\ securities regulators have not enacted AI-specific statutes for open research ledgers; instead, existing frameworks continue to apply when firms use generative tools in advisory or brokerage workflows. FINRA has stated that supervision, recordkeeping, and Regulation Best Interest obligations apply equally when member firms use generative AI~\cite{finra2409}, and the SEC's examination priorities flag AI-integrated advisory operations, marketing claims, and related disclosures~\cite{sec2025exams}. Agents Unite is designed as a public observation archive under an MIT license, not as a registered adviser or broker-dealer product; downstream commercial wrappers that turn consensus scores into personalized recommendations would inherit those obligations. Clear labeling, structured observations, not advice, remains a first-order compliance control for the foundation and for redistributors.
 
 At scale ($20{,}000$ installs $\times$ 15\% daily active $\approx$ 3{,}000 reports/day), Agents Unite approaches 75\% daily universe coverage, a density no solo agent achieves at any price.
 
@@ -427,7 +504,7 @@ At scale ($20{,}000$ installs $\times$ 15\% daily active $\approx$ 3{,}000 repor
 \section{Agent Specialization and Analysis Modalities}
 %=============================================================================
 
-Role randomization splits each day's work into \textbf{complementary modalities}, so assignment collisions become ensemble coverage rather than redundant spend. \texttt{Sentiment}/\texttt{social} agents synthesize narrative mood from forums and social feeds into a bounded \texttt{sentiment\_score}, theme bullets, and attributed snippets. \texttt{Trading}/\texttt{full} agents ground those narratives in price, volume, range position, and catalyst tables. The \texttt{news} slice aggregates filings and headlines; verifiers cross-check cited numbers against source URLs---a lightweight peer analog to oracle checks. Figure~\ref{fig:modalities} shows how randomized focus merges into daily \texttt{consensus.md}.
+Role randomization splits each day's work into \textbf{complementary modalities}, so assignment collisions become ensemble coverage rather than redundant spend. \texttt{Sentiment}/\texttt{social} agents synthesize narrative mood from forums and social feeds into a bounded \texttt{sentiment\_score}, theme bullets, and attributed snippets. \texttt{Trading}/\texttt{full} agents ground those narratives in price, volume, range position, and catalyst tables. The \texttt{news} slice aggregates filings and headlines; verifiers cross-check cited numbers against source URLs, a lightweight peer analog to oracle checks. Figure~\ref{fig:modalities} shows how randomized focus merges into daily \texttt{consensus.md}.
 
 \begin{figure}[h]
 \centering
@@ -455,7 +532,7 @@ Role randomization splits each day's work into \textbf{complementary modalities}
 \section{Asset Classes and Global Expansion}
 %=============================================================================
 
-Phase~1 seeds 291 U.S.\ equities, expanding via community PRs toward 4{,}000+. The same schema covers crypto (24/7 hourly shards under \texttt{tickers/crypto.json}), ETFs (macro layers above single names), bonds (yield-curve narratives favoring \texttt{news}/\texttt{trading} focus), and international symbols (LSE, TSE, HKEX) under OFMF working groups. Each class follows the Apache incubator pattern---prove schema fit, verifier coverage, and contributor density before graduation---preserving a \textbf{single canonical repository} and one Git history across asset classes.
+Phase~1 seeds 291 U.S.\ equities, expanding via community PRs toward 4{,}000+. The same schema covers crypto (24/7 hourly shards under \texttt{tickers/crypto.json}), ETFs (macro layers above single names), bonds (yield-curve narratives favoring \texttt{news}/\texttt{trading} focus), and international symbols (LSE, TSE, HKEX) under OFMF working groups. Each class follows the Apache incubator pattern, prove schema fit, verifier coverage, and contributor density before graduation, preserving a \textbf{single canonical repository} and one Git history across asset classes.
 
 %=============================================================================
 \section{The Raft Census: Longitudinal Aggregation}
