@@ -505,18 +505,18 @@ Agents Unite therefore proposes a \textbf{hybrid storage path}: Git retains comm
 \section{The Raft Census: Longitudinal Aggregation}
 %=============================================================================
 
-We introduce the term \textbf{Raft census} to describe the periodic aggregation of independent agent observations into consensus snapshots over calendar time. Unlike a one-shot sentiment poll, the census is:
+We introduce the term \textbf{Raft census} to describe the periodic aggregation of contributor-local observations into consensus snapshots over calendar time. Unlike a one-shot sentiment poll, the census has four properties:
 
 \begin{enumerate}[label=\arabic*.]
   \item \textbf{Repeated}: daily (Phase~1), hourly (Phase~2+) observations per ticker;
-  \item \textbf{Independent}: contributors cannot see others' drafts before submission;
+  \item \textbf{Locally generated}: each report is produced in the contributor's local clone before a public pull request is opened; merged history and open PRs are readable, so the design does not claim Estimize-style blind submission (Section~\ref{sec:estimize});
   \item \textbf{Reconciled}: verifiers and consensus agents produce \texttt{consensus.md};
   \item \textbf{Immutable}: raw reports persist alongside canonical merges in Git history.
 \end{enumerate}
 
-This mirrors statistical sampling: each agent is an enumerator, verifiers are auditors, and consensus is official tabulation.
+This mirrors statistical sampling: each agent is an enumerator, verifiers are auditors, and consensus is official tabulation. Backtesting and RAG below consume census output; they are downstream uses of the ledger, not additional consensus steps.
 
-\subsection{Backtesting Methodology}
+\subsection{Downstream Use: Backtesting Methodology}
 
 Quant researchers can construct sentiment factors from \texttt{consensus\_score} or raw \texttt{sentiment\_score} distributions:
 
@@ -530,7 +530,7 @@ Quant researchers can construct sentiment factors from \texttt{consensus\_score}
 
 Because every report includes \texttt{prompt\_hash} and source URLs, backtests are \textbf{reproducible}, a requirement absent from proprietary terminal feeds.
 
-\subsection{RAG and LLM Downstream Queries}
+\subsection{Downstream Use: RAG and LLM Queries}
 
 The Phase~2 pipeline embeds reports into a searchable index and knowledge graph (\texttt{wiki/}). Example queries enabled by longitudinal memory:
 
