@@ -1,0 +1,381 @@
+{
+  "universe_size": 291,
+  "timestamp": "2026-07-13 15:38:44",
+  "exp1_coverage_scaling": {
+    "scenarios": [
+      {
+        "C": 10,
+        "D": 30,
+        "optimizer": {
+          "contributors": 10,
+          "days": 30,
+          "universe": 291,
+          "covered": 181,
+          "coverage_pct": 62.2,
+          "collisions": 0,
+          "collision_rate": 0.0,
+          "total_assignments": 300
+        },
+        "uniform": {
+          "contributors": 10,
+          "days": 30,
+          "universe": 291,
+          "covered": 187,
+          "coverage_pct": 64.26,
+          "collisions": 5,
+          "collision_rate": 0.0167,
+          "total_assignments": 300
+        }
+      },
+      {
+        "C": 50,
+        "D": 30,
+        "optimizer": {
+          "contributors": 50,
+          "days": 30,
+          "universe": 291,
+          "covered": 290,
+          "coverage_pct": 99.66,
+          "collisions": 4,
+          "collision_rate": 0.0027,
+          "total_assignments": 1500
+        },
+        "uniform": {
+          "contributors": 50,
+          "days": 30,
+          "universe": 291,
+          "covered": 290,
+          "coverage_pct": 99.66,
+          "collisions": 103,
+          "collision_rate": 0.0687,
+          "total_assignments": 1500
+        }
+      },
+      {
+        "C": 100,
+        "D": 30,
+        "optimizer": {
+          "contributors": 100,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 23,
+          "collision_rate": 0.0077,
+          "total_assignments": 3000
+        },
+        "uniform": {
+          "contributors": 100,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 468,
+          "collision_rate": 0.156,
+          "total_assignments": 3000
+        }
+      },
+      {
+        "C": 200,
+        "D": 30,
+        "optimizer": {
+          "contributors": 200,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 159,
+          "collision_rate": 0.0265,
+          "total_assignments": 6000
+        },
+        "uniform": {
+          "contributors": 200,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 1640,
+          "collision_rate": 0.2733,
+          "total_assignments": 6000
+        }
+      },
+      {
+        "C": 500,
+        "D": 30,
+        "optimizer": {
+          "contributors": 500,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 6270,
+          "collision_rate": 0.418,
+          "total_assignments": 15000
+        },
+        "uniform": {
+          "contributors": 500,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 7832,
+          "collision_rate": 0.5221,
+          "total_assignments": 15000
+        }
+      },
+      {
+        "C": 1000,
+        "D": 30,
+        "optimizer": {
+          "contributors": 1000,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 21270,
+          "collision_rate": 0.709,
+          "total_assignments": 30000
+        },
+        "uniform": {
+          "contributors": 1000,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 21550,
+          "collision_rate": 0.7183,
+          "total_assignments": 30000
+        }
+      },
+      {
+        "C": 2000,
+        "D": 30,
+        "optimizer": {
+          "contributors": 2000,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 51270,
+          "collision_rate": 0.8545,
+          "total_assignments": 60000
+        },
+        "uniform": {
+          "contributors": 2000,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 51282,
+          "collision_rate": 0.8547,
+          "total_assignments": 60000
+        }
+      },
+      {
+        "C": 3000,
+        "D": 30,
+        "optimizer": {
+          "contributors": 3000,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 81270,
+          "collision_rate": 0.903,
+          "total_assignments": 90000
+        },
+        "uniform": {
+          "contributors": 3000,
+          "days": 30,
+          "universe": 291,
+          "covered": 291,
+          "coverage_pct": 100.0,
+          "collisions": 81270,
+          "collision_rate": 0.903,
+          "total_assignments": 90000
+        }
+      }
+    ],
+    "time_series_C1000": [
+      {
+        "D": 1,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 3,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 7,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 14,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 30,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 60,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 90,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 180,
+        "covered": 291,
+        "coverage_pct": 100.0
+      },
+      {
+        "D": 365,
+        "covered": 291,
+        "coverage_pct": 100.0
+      }
+    ],
+    "solo_365d": {
+      "contributors": 1,
+      "days": 365,
+      "universe": 291,
+      "covered": 206,
+      "coverage_pct": 70.79,
+      "collisions": 0,
+      "collision_rate": 0.0,
+      "total_assignments": 365
+    }
+  },
+  "exp2_uniformity": {
+    "contributors": 10000,
+    "universe": 291,
+    "expected_per_ticker": 34.36,
+    "observed_mean": 34.36,
+    "observed_stdev": 5.97,
+    "chi_square": 300.59,
+    "dof": 290,
+    "chi_crit_001": 340.0,
+    "uniform": true,
+    "birthday_collision_pct": {
+      "10": 14.47,
+      "50": 98.86,
+      "100": 100.0,
+      "500": 100.0,
+      "1000": 100.0
+    }
+  },
+  "exp3_cost_benchmark": {
+    "report_count": 35,
+    "in_tokens": {
+      "mean": 297,
+      "median": 94,
+      "p90": 635,
+      "max": 1337
+    },
+    "out_tokens": {
+      "mean": 188,
+      "median": 76
+    },
+    "overhead_multiplier": 5.0,
+    "cost_per_report_usd": {
+      "gpt-4o-mini": {
+        "mean": 0.00034,
+        "median": 0.00012,
+        "p90": 0.00067,
+        "max": 0.0016
+      },
+      "deepseek-v4-flash": {
+        "mean": 0.00026,
+        "median": 9e-05,
+        "p90": 0.00052,
+        "max": 0.00121
+      },
+      "gemini-flash-lite": {
+        "mean": 0.00022,
+        "median": 8e-05,
+        "p90": 0.00045,
+        "max": 0.00106
+      },
+      "gpt-4.1": {
+        "mean": 0.00448,
+        "median": 0.00155,
+        "p90": 0.00898,
+        "max": 0.02128
+      }
+    }
+  },
+  "exp4_consensus_robustness": {
+    "real_score_count": 34,
+    "real_mean": 0.116,
+    "real_stdev": 0.269,
+    "trials_per_n": 500,
+    "outlier_injection": "20% coordinated +0.6 pump when n>=5",
+    "results": [
+      {
+        "n": 1,
+        "mae_no_filter": 0.1124,
+        "mae_mad_filter": 0.1124,
+        "outliers_rejected_per_trial": 0.0,
+        "improvement_pct": 0.0
+      },
+      {
+        "n": 2,
+        "mae_no_filter": 0.0799,
+        "mae_mad_filter": 0.0799,
+        "outliers_rejected_per_trial": 0.0,
+        "improvement_pct": 0.0
+      },
+      {
+        "n": 3,
+        "mae_no_filter": 0.073,
+        "mae_mad_filter": 0.0795,
+        "outliers_rejected_per_trial": 0.65,
+        "improvement_pct": -8.9
+      },
+      {
+        "n": 5,
+        "mae_no_filter": 0.0737,
+        "mae_mad_filter": 0.0732,
+        "outliers_rejected_per_trial": 1.41,
+        "improvement_pct": 0.7
+      },
+      {
+        "n": 10,
+        "mae_no_filter": 0.0573,
+        "mae_mad_filter": 0.0491,
+        "outliers_rejected_per_trial": 2.68,
+        "improvement_pct": 14.2
+      },
+      {
+        "n": 20,
+        "mae_no_filter": 0.0472,
+        "mae_mad_filter": 0.0363,
+        "outliers_rejected_per_trial": 5.39,
+        "improvement_pct": 23.1
+      },
+      {
+        "n": 50,
+        "mae_no_filter": 0.0452,
+        "mae_mad_filter": 0.0239,
+        "outliers_rejected_per_trial": 13.15,
+        "improvement_pct": 47.0
+      }
+    ]
+  },
+  "exp5_validation_throughput": {
+    "report_dirs": 37,
+    "elapsed_sec": 0.048,
+    "reports_per_sec": 771.77,
+    "exit_code": 2,
+    "ms_per_report": 1.3,
+    "projected_3000_prs_sec": 3.9
+  }
+}
